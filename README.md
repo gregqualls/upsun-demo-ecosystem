@@ -12,7 +12,7 @@ A configuration-driven system for creating and managing complete demo ecosystems
 ## Files
 
 - `setup-demo.sh` - **One-command setup script** with prerequisites check and progress indicators
-- `cleanup-demo.sh` - **Safe cleanup script** with confirmation prompts
+- `cleanup-demo.sh` - **Complete cleanup script** that removes all projects and organizations
 - `demo-setup.py` - Main Python script that generates CLI commands from JSON configuration
 - `demo-config.json` - Complete BMC Global Group Inc. yacht industry demo configuration
 - `example-config.json` - Example configuration with detailed documentation
@@ -127,6 +127,7 @@ Each project includes:
 - **Small scale first**: Test with 1-2 organizations before full ecosystem
 - **Verify cleanup**: Always test cleanup scripts to ensure complete removal
 - **Check status**: Use `upsunstg organization:list` and `upsunstg project:list` to verify
+- **Robust cleanup**: Script handles fake names in config vs real project titles
 
 ## Customization Examples
 
@@ -191,9 +192,10 @@ Each project includes:
 - **Environment roles**: Non-admin users need `production:viewer` role
 
 ### Cleanup Issues
-- **Project deletion**: Use project IDs, not names, for deletion
+- **Project deletion**: Script automatically uses project IDs from `upsunstg project:list --pipe`
+- **Organization deletion**: Script automatically uses organization IDs from `upsunstg organization:list`
 - **User deletion**: Only works for users who have accepted invitations
-- **Organization deletion**: Ensure all projects are deleted first
+- **Complete cleanup**: Script removes all projects first, then all organizations
 
 ## Benefits
 
@@ -204,6 +206,7 @@ Each project includes:
 5. **Automated**: Generate all CLI commands automatically
 6. **Safe**: Includes complete cleanup procedures
 7. **Tested**: Based on real-world testing with Upsun staging environment
+8. **Ready-to-use**: Includes complete yacht industry demo with 16 projects
 
 ## Troubleshooting
 
