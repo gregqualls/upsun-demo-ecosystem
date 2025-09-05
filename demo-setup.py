@@ -257,27 +257,36 @@ class DemoEcosystemManager:
             for project in self.config['projects']:
                 org_name = project['organization'].lower().replace(' ', '-')
                 org_label = project['organization'].replace('bmc-', 'BMC ').title()
-                commands.append(f"echo 'Creating project: {project['title']} in {org_label}'")
-                commands.append(f"# Get organization ID by label")
-                commands.append(f"org_id=$(upsunstg organization:list --format plain --no-header | grep -i \"{org_label}\" | head -1 | awk '{{print $1}}')")
-                commands.append(f"if [ -z \"$org_id\" ]; then")
-                commands.append(f"  echo \"Error: Organization {org_label} not found\"")
-                commands.append(f"  exit 1")
-                commands.append(f"fi")
+                project_title = project['title']
+                commands.append(f"echo 'Checking project: {project_title} in {org_label}'")
+                
+                # Check if project already exists
+                commands.append(f"if upsunstg project:list --format plain --no-header | grep -q \"{project_title}\"; then")
+                commands.append(f"  echo '  {project_title} already exists, skipping'")
+                commands.append("else")
+                commands.append(f"  echo '  Creating {project_title}...'")
+                commands.append(f"  # Get organization ID by label")
+                commands.append(f"  org_id=$(upsunstg organization:list --format plain --no-header | grep -i \"{org_label}\" | head -1 | awk '{{print $1}}')")
+                commands.append(f"  if [ -z \"$org_id\" ]; then")
+                commands.append(f"    echo \"Error: Organization {org_label} not found\"")
+                commands.append(f"    exit 1")
+                commands.append(f"  fi")
                 
                 if project.get('source', {}).get('type') == 'github':
                     # For GitHub projects, use the repository URL
                     repo_url = project['source']['repository']
                     if 'path' in project['source']:
                         # For repositories with subdirectories, note that manual setup may be required
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
-                        commands.append(f"# Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
+                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"    # Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
                     else:
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                 else:
                     # For local projects, create without init-repo
-                    commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --yes")
-                    commands.append(f"# Note: Local project {project['name']} will need to be connected manually")
+                    commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --yes")
+                    commands.append(f"    # Note: Local project {project['name']} will need to be connected manually")
+                
+                commands.append("fi")
         else:
             commands.append("# No projects configured")
         
@@ -354,20 +363,22 @@ class DemoEcosystemManager:
     def generate_variable_commands(self) -> List[str]:
         """Generate environment variable commands."""
         commands = []
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                # Global variables
-                if 'environment_variables' in self.config and 'global' in self.config['environment_variables']:
-                    for key, value in self.config['environment_variables']['global'].items():
-                        commands.append(f"upsunstg variable:create --project {project['name']} --name {key} --value \"{value}\"")
-                
-                # Environment-specific variables
-                for env in project['environments']:
-                    if 'environment_variables' in self.config and env in self.config['environment_variables']:
-                        for key, value in self.config['environment_variables'][env].items():
-                            commands.append(f"upsunstg variable:create --project {project['name']} --environment {env} --name {key} --value \"{value}\"")
-        else:
-            commands.append("# No projects configured")
+        commands.append("# Note: Variable commands disabled - configure environment variables manually in Upsun console")
+        commands.append("# To add variables, use: upsunstg variable:create --project <project-id> --name <var-name> --value <var-value>")
+        # if 'projects' in self.config and self.config['projects']:
+        #     for project in self.config['projects']:
+        #         # Global variables
+        #         if 'environment_variables' in self.config and 'global' in self.config['environment_variables']:
+        #             for key, value in self.config['environment_variables']['global'].items():
+        #                 commands.append(f"upsunstg variable:create --project {project['name']} --name {key} --value \"{value}\"")
+        #         
+        #         # Environment-specific variables
+        #         for env in project['environments']:
+        #             if 'environment_variables' in self.config and env in self.config['environment_variables']:
+        #                 for key, value in self.config['environment_variables'][env].items():
+        #                     commands.append(f"upsunstg variable:create --project {project['name']} --environment {env} --name {key} --value \"{value}\"")
+        # else:
+        #     commands.append("# No projects configured")
         return commands
     
     
@@ -389,11 +400,13 @@ class DemoEcosystemManager:
     def generate_backup_commands(self) -> List[str]:
         """Generate backup commands."""
         commands = []
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                commands.append(f"upsunstg backup:create --project {project['name']} --environment production")
-        else:
-            commands.append("# No projects configured")
+        commands.append("# Note: Backup commands disabled - create backups manually in Upsun console")
+        commands.append("# To create backups, use: upsunstg backup:create --project <project-id> --environment <env>")
+        # if 'projects' in self.config and self.config['projects']:
+        #     for project in self.config['projects']:
+        #         commands.append(f"upsunstg backup:create --project {project['name']} --environment production")
+        # else:
+        #     commands.append("# No projects configured")
         return commands
     
     def create_local_directories(self) -> List[str]:
