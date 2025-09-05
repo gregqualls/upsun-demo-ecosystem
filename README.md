@@ -16,7 +16,6 @@ A configuration-driven system for creating and managing complete demo ecosystems
 - `example-config.json` - Example configuration with detailed documentation
 - `final-test-config.json` - Tested configuration with real GitHub repositories
 - `clilist.md` - Reference of available Upsun CLI commands
-- `mainplan.md` - Original project plan (reference only)
 
 ## Quick Start
 
