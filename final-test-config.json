@@ -1,0 +1,157 @@
+{
+  "_comment": "Simplified final test configuration - 2 orgs, 2 projects, 3 users",
+  "company": {
+    "name": "BMC Global Group Inc.",
+    "domain": "bmcglobalgroup.com",
+    "description": "Holding company with diverse technology portfolio",
+    "size": "Small team (8-12 employees)"
+  },
+  "organizations": {
+    "fixed": [
+      {
+        "name": "BMC Content Management",
+        "label": "BMC Content Management",
+        "type": "fixed",
+        "description": "Fixed organization for monolithic CMS applications"
+      }
+    ],
+    "flex": [
+      {
+        "name": "BMC Development Labs",
+        "label": "BMC Development Labs",
+        "type": "flex",
+        "description": "Flex organization for microservices and custom applications"
+      }
+    ]
+  },
+  "teams": [
+    {
+      "name": "dev-team",
+      "title": "Development Team",
+      "description": "Core development team"
+    }
+  ],
+  "users": [
+    {
+      "email": "admin@bmcglobalgroup.com",
+      "role": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "title": "System Administrator",
+      "team": "dev-team"
+    },
+    {
+      "email": "dev@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Dev",
+      "last_name": "User",
+      "title": "Developer",
+      "team": "dev-team"
+    },
+    {
+      "email": "viewer@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Viewer",
+      "last_name": "User",
+      "title": "Viewer",
+      "team": "dev-team"
+    }
+  ],
+  "projects": [
+    {
+      "name": "bmc-drupal-cms",
+      "title": "BMC Drupal CMS",
+      "description": "Drupal 10 CMS for content management",
+      "organization": "BMC Content Management",
+      "team": "dev-team",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/drupal10",
+        "branch": "master"
+      },
+      "domains": {
+        "production": ["cms.bmcglobalgroup.com"],
+        "staging": ["cms-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-laravel-app",
+      "title": "BMC Laravel Application",
+      "description": "Laravel e-commerce platform",
+      "organization": "BMC Content Management",
+      "team": "dev-team",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/laravel",
+        "branch": "master"
+      },
+      "domains": {
+        "production": ["app.bmcglobalgroup.com"],
+        "staging": ["app-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-drupal11-api",
+      "title": "BMC Drupal 11 API",
+      "description": "Drupal 11 headless API service",
+      "organization": "BMC Development Labs",
+      "team": "dev-team",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/upsun/snippets",
+        "branch": "main",
+        "path": "examples/drupal11"
+      },
+      "domains": {
+        "production": ["api.bmcglobalgroup.com"],
+        "staging": ["api-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-decoupled-frontend",
+      "title": "BMC Decoupled Frontend",
+      "description": "Decoupled frontend application",
+      "organization": "BMC Development Labs",
+      "team": "dev-team",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/upsun/snippets",
+        "branch": "main",
+        "path": "examples/demo-decouple-frontend"
+      },
+      "domains": {
+        "production": ["frontend.bmcglobalgroup.com"],
+        "staging": ["frontend-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    }
+  ],
+  "environment_variables": {
+    "global": {
+      "APP_ENV": "production",
+      "COMPANY_NAME": "BMC Global Group Inc.",
+      "COMPANY_DOMAIN": "bmcglobalgroup.com"
+    },
+    "production": {
+      "LOG_LEVEL": "info",
+      "DEBUG": "false"
+    },
+    "staging": {
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    },
+    "development": {
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    }
+  },
+  "integrations": [
+    {
+      "type": "github",
+      "description": "GitHub integration for source control"
+    }
+  ]
+}

@@ -1,0 +1,275 @@
+{
+  "company": {
+    "name": "BMC Global Group Inc.",
+    "domain": "bmcglobalgroup.com",
+    "description": "Technology Holding Company",
+    "size": "Small to medium enterprise (50-100 employees)"
+  },
+  "organizations": {
+    "fixed": [
+      {
+        "name": "BMC Global Group Inc.",
+        "label": "BMC Global Group Inc.",
+        "type": "fixed",
+        "description": "Main holding company"
+      },
+      {
+        "name": "BMC E-commerce Platform",
+        "label": "BMC E-commerce Platform",
+        "type": "fixed",
+        "description": "E-commerce site subsidiary"
+      },
+      {
+        "name": "BMC Content Management",
+        "label": "BMC Content Management",
+        "type": "fixed",
+        "description": "CMS platform subsidiary"
+      }
+    ],
+    "flex": [
+      {
+        "name": "BMC Development Labs",
+        "label": "BMC Development Labs",
+        "type": "flex",
+        "description": "R&D division"
+      },
+      {
+        "name": "BMC Client Projects",
+        "label": "BMC Client Projects",
+        "type": "flex",
+        "description": "Client work division"
+      }
+    ]
+  },
+  "teams": [
+    {
+      "name": "fullstack-dev",
+      "title": "Full-Stack Development",
+      "description": "Handles all development work"
+    },
+    {
+      "name": "executive-mgmt",
+      "title": "Executive & Management",
+      "description": "Leadership team"
+    },
+    {
+      "name": "finance-billing",
+      "title": "Finance & Billing",
+      "description": "Business operations team"
+    }
+  ],
+  "users": [
+    {
+      "email": "sarah.johnson@bmcglobalgroup.com",
+      "role": "admin",
+      "first_name": "Sarah",
+      "last_name": "Johnson",
+      "title": "CEO",
+      "team": "executive-mgmt"
+    },
+    {
+      "email": "michael.chen@bmcglobalgroup.com",
+      "role": "admin",
+      "first_name": "Michael",
+      "last_name": "Chen",
+      "title": "CTO",
+      "team": "executive-mgmt"
+    },
+    {
+      "email": "alex.thompson@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Alex",
+      "last_name": "Thompson",
+      "title": "Lead Developer",
+      "team": "fullstack-dev"
+    },
+    {
+      "email": "david.kim@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "David",
+      "last_name": "Kim",
+      "title": "Senior Developer",
+      "team": "fullstack-dev"
+    },
+    {
+      "email": "jennifer.martinez@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Jennifer",
+      "last_name": "Martinez",
+      "title": "Full-Stack Developer",
+      "team": "fullstack-dev"
+    },
+    {
+      "email": "robert.wilson@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Robert",
+      "last_name": "Wilson",
+      "title": "Junior Developer",
+      "team": "fullstack-dev"
+    },
+    {
+      "email": "amanda.davis@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Amanda",
+      "last_name": "Davis",
+      "title": "Finance Manager",
+      "team": "finance-billing"
+    },
+    {
+      "email": "kevin.lee@bmcglobalgroup.com",
+      "role": "viewer",
+      "first_name": "Kevin",
+      "last_name": "Lee",
+      "title": "Operations Manager",
+      "team": "finance-billing"
+    }
+  ],
+  "projects": [
+    {
+      "name": "bmc-corporate-website",
+      "title": "BMC Corporate Website",
+      "description": "Main corporate website",
+      "organization": "bmc-global-group",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/bmc-corporate-website"
+      },
+      "domains": {
+        "production": ["www.bmcglobalgroup.com"],
+        "staging": ["staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-ecommerce-store",
+      "title": "BMC E-commerce Store",
+      "description": "E-commerce platform",
+      "organization": "bmc-ecommerce-platform",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/bmc-ecommerce-store"
+      },
+      "domains": {
+        "production": ["store.bmcglobalgroup.com"],
+        "staging": ["store-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-cms-platform",
+      "title": "BMC CMS Platform",
+      "description": "Content management system",
+      "organization": "bmc-content-management",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/drupal10",
+        "branch": "master"
+      },
+      "domains": {
+        "production": ["cms.bmcglobalgroup.com"],
+        "staging": ["cms-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-api-services",
+      "title": "BMC API Services",
+      "description": "Microservices API platform",
+      "organization": "bmc-development-labs",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/bmc-api-services"
+      },
+      "domains": {
+        "production": ["api.bmcglobalgroup.com"],
+        "staging": ["api-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "client-project-alpha",
+      "title": "Client Project Alpha",
+      "description": "Client project for Alpha Corp",
+      "organization": "bmc-client-projects",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/client-project-alpha"
+      },
+      "domains": {
+        "production": ["alpha.bmcglobalgroup.com"],
+        "staging": ["alpha-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "client-project-beta",
+      "title": "Client Project Beta",
+      "description": "Client project for Beta Inc",
+      "organization": "bmc-client-projects",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/client-project-beta"
+      },
+      "domains": {
+        "production": ["beta.bmcglobalgroup.com"],
+        "staging": ["beta-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "bmc-analytics-dashboard",
+      "title": "BMC Analytics Dashboard",
+      "description": "Analytics and monitoring dashboard",
+      "organization": "bmc-development-labs",
+      "team": "fullstack-dev",
+      "source": {
+        "type": "local",
+        "path": "./projects/bmc-analytics-dashboard"
+      },
+      "domains": {
+        "production": ["analytics.bmcglobalgroup.com"],
+        "staging": ["analytics-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    }
+  ],
+  "environment_variables": {
+    "global": {
+      "APP_ENV": "production",
+      "COMPANY_NAME": "BMC Global Group Inc.",
+      "COMPANY_DOMAIN": "bmcglobalgroup.com"
+    },
+    "production": {
+      "LOG_LEVEL": "info",
+      "DEBUG": "false"
+    },
+    "staging": {
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    },
+    "development": {
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    }
+  },
+  "integrations": [
+    {
+      "type": "github",
+      "description": "GitHub integration for source control"
+    },
+    {
+      "type": "newrelic",
+      "description": "New Relic monitoring integration"
+    },
+    {
+      "type": "datadog",
+      "description": "Datadog monitoring integration"
+    }
+  ]
+}

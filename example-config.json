@@ -1,0 +1,150 @@
+{
+  "_comment": "This is an example configuration file for setting up a demo ecosystem in Upsun. Copy this file and modify the values below to match your company and requirements.",
+  "company": {
+    "_comment": "Company information - customize these values for your demo",
+    "name": "TechStart Solutions",
+    "domain": "techstartsolutions.com",
+    "description": "Startup Technology Company",
+    "size": "Small startup (10-20 employees)"
+  },
+  "organizations": {
+    "_comment": "Organizations are billing entities in Upsun. Fixed orgs are better for monolithic apps (CMS, e-commerce), Flex orgs for microservices and custom apps.",
+    "fixed": [
+      {
+        "_comment": "Fixed organizations - use for monolithic applications like CMS, e-commerce sites",
+        "name": "TechStart Solutions",
+        "label": "TechStart Solutions",
+        "type": "fixed",
+        "description": "Main company"
+      }
+    ],
+    "flex": [
+      {
+        "_comment": "Flex organizations - use for microservices and custom applications with granular resource control",
+        "name": "TechStart Labs",
+        "label": "TechStart Labs",
+        "type": "flex",
+        "description": "R&D division"
+      }
+    ]
+  },
+  "teams": [
+    {
+      "_comment": "Teams group users with specific roles and access. Customize team names and descriptions for your organization.",
+      "name": "dev-team",
+      "title": "Development Team",
+      "description": "Full-stack development team"
+    },
+    {
+      "name": "leadership",
+      "title": "Leadership",
+      "description": "Company leadership"
+    }
+  ],
+  "users": [
+    {
+      "_comment": "Users with access to the ecosystem. Roles: admin (full access), contributor (project access), viewer (read-only). Update emails, names, and team assignments.",
+      "email": "ceo@techstartsolutions.com",
+      "role": "admin",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "title": "CEO",
+      "team": "leadership"
+    },
+    {
+      "email": "dev1@techstartsolutions.com",
+      "role": "contributor",
+      "first_name": "John",
+      "last_name": "Doe",
+      "title": "Lead Developer",
+      "team": "dev-team"
+    },
+    {
+      "email": "dev2@techstartsolutions.com",
+      "role": "contributor",
+      "first_name": "Alice",
+      "last_name": "Johnson",
+      "title": "Developer",
+      "team": "dev-team"
+    }
+  ],
+  "projects": [
+    {
+      "_comment": "Projects are applications hosted within organizations. Each project needs a unique name, title, and organization assignment.",
+      "name": "techstart-website",
+      "title": "TechStart Website",
+      "description": "Company website",
+      "organization": "techstart-solutions",
+      "team": "dev-team",
+      "source": {
+        "_comment": "Source configuration: 'local' for local directories, 'github' for GitHub repositories",
+        "type": "local",
+        "path": "./projects/techstart-website"
+      },
+      "domains": {
+        "_comment": "Custom domains for each environment. Update with your actual domains.",
+        "production": ["www.techstartsolutions.com"],
+        "staging": ["staging.techstartsolutions.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "techstart-api",
+      "title": "TechStart API",
+      "description": "Main API service",
+      "organization": "techstart-labs",
+      "team": "dev-team",
+      "source": {
+        "type": "local",
+        "path": "./projects/techstart-api"
+      },
+      "domains": {
+        "production": ["api.techstartsolutions.com"],
+        "staging": ["api-staging.techstartsolutions.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    }
+  ],
+  "environment_variables": {
+    "_comment": "Environment variables for all projects. Global variables apply to all environments, environment-specific variables override global ones.",
+    "global": {
+      "_comment": "Global variables applied to all projects and environments",
+      "APP_ENV": "production",
+      "COMPANY_NAME": "TechStart Solutions",
+      "COMPANY_DOMAIN": "techstartsolutions.com"
+    },
+    "production": {
+      "_comment": "Production environment variables",
+      "LOG_LEVEL": "info",
+      "DEBUG": "false"
+    },
+    "staging": {
+      "_comment": "Staging environment variables",
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    },
+    "development": {
+      "_comment": "Development environment variables",
+      "LOG_LEVEL": "debug",
+      "DEBUG": "true"
+    }
+  },
+  "integrations": [
+    {
+      "_comment": "Third-party integrations for monitoring, logging, and source control",
+      "type": "github",
+      "description": "GitHub integration for source control"
+    }
+  ],
+  "_usage_notes": {
+    "_comment": "How to use this configuration file:",
+    "1": "Copy this file to 'demo-config.json' and modify the values above",
+    "2": "Update company information, organization names, and user details",
+    "3": "Configure projects with either 'local' or 'github' sources",
+    "4": "Set appropriate domains for each environment",
+    "5": "Adjust resource allocations based on your needs",
+    "6": "Run 'python demo-setup.py' to generate setup scripts",
+    "7": "Execute the generated scripts to create your demo ecosystem",
+    "8": "Use cleanup scripts to remove the demo when finished"
+  }
+}
