@@ -51,17 +51,11 @@ class DemoEcosystemManager:
         # Phase 3: Organization Verification
         commands.extend(self.generate_organization_verification_commands())
         
-        # Phase 4: Teams
-        commands.extend(self.generate_team_commands())
-        
-        # Phase 5: Users
+        # Phase 4: Users
         commands.extend(self.generate_user_commands())
         
-        # Phase 6: Projects
+        # Phase 5: Projects
         commands.extend(self.generate_project_commands())
-        
-        # Phase 7: Team-Project Assignments
-        commands.extend(self.generate_team_project_assignments())
         
         # Phase 8: Environment Setup
         commands.extend(self.generate_environment_commands())
@@ -88,7 +82,8 @@ class DemoEcosystemManager:
         commands = []
         
         # Delete all projects
-        commands.append("# Note: Deleting all projects by listing them first")
+        commands.append("# Phase 1: Delete all projects")
+        commands.append("echo 'Deleting all projects...'")
         commands.append("upsunstg project:list --pipe | while read project_id; do")
         commands.append("  if [ ! -z \"$project_id\" ]; then")
         commands.append("    echo \"Deleting project: $project_id\"")
@@ -96,15 +91,22 @@ class DemoEcosystemManager:
         commands.append("  fi")
         commands.append("done")
         
-        # Delete all teams
-        commands.append("# Note: Teams may not be available in staging environment")
-        if 'teams' in self.config and self.config['teams']:
-            for team in self.config['teams']:
-                commands.append(f"upsunstg team:delete --team \"{team['name']}\" --yes")
-        else:
-            commands.append("# No teams to delete")
+        # Wait for projects to be fully deleted from system cache
+        commands.append("# Phase 2: Wait for projects to be fully deleted from system cache")
+        commands.append("echo 'Waiting for projects to be fully deleted from system cache...'")
+        commands.append("for i in {1..5}; do")
+        commands.append("  remaining_projects=$(upsunstg project:list --pipe | wc -l)")
+        commands.append("  if [ \"$remaining_projects\" -eq 0 ]; then")
+        commands.append("    echo 'All projects successfully deleted'")
+        commands.append("    break")
+        commands.append("  else")
+        commands.append("    echo \"$remaining_projects projects still exist, waiting 10 seconds... (attempt $i/5)\"")
+        commands.append("    sleep 10")
+        commands.append("  fi")
+        commands.append("done")
         
-        # Delete all users
+        # Delete all users (if any)
+        commands.append("# Phase 3: Delete users (if any)")
         if 'users' in self.config and self.config['users']:
             for user in self.config['users']:
                 if 'projects' in self.config and self.config['projects']:
@@ -116,7 +118,8 @@ class DemoEcosystemManager:
             commands.append("# No users to delete")
         
         # Delete all organizations
-        commands.append("# Note: Deleting all organizations by listing them first")
+        commands.append("# Phase 4: Delete all organizations")
+        commands.append("echo 'Deleting all organizations...'")
         commands.append("upsunstg organization:list --format plain --no-header | awk '{print $1}' | while read org_id; do")
         commands.append("  if [ ! -z \"$org_id\" ] && [ \"$org_id\" != \"01k4606e9hqxyxdn2ph0k06ee1\" ]; then")
         commands.append("    echo \"Deleting organization: $org_id\"")
@@ -210,20 +213,6 @@ class DemoEcosystemManager:
         
         return commands
     
-    def generate_team_commands(self) -> List[str]:
-        """Generate team creation commands."""
-        commands = []
-        # Note: Teams may not be available in all environments (e.g., staging)
-        # Check if teams are supported before running these commands
-        commands.append("# Note: Teams may not be available in staging environment")
-        commands.append("# Check team support with: upsunstg team:list")
-        
-        if 'teams' in self.config and self.config['teams']:
-            for team in self.config['teams']:
-                commands.append(f"upsunstg team:create --label \"{team['title']}\" --org \"{self._get_default_org()}\" --yes")
-        else:
-            commands.append("# No teams configured")
-        return commands
     
     def generate_user_commands(self) -> List[str]:
         """Generate user creation commands."""
@@ -292,27 +281,6 @@ class DemoEcosystemManager:
         
         return commands
     
-    def generate_team_project_assignments(self) -> List[str]:
-        """Generate team-project assignment commands."""
-        commands = []
-        
-        # Note: Teams may not be available in staging environment
-        commands.append("# Note: Teams may not be available in staging environment")
-        commands.append("# Check team support with: upsunstg team:list")
-        
-        # Assign projects to teams
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                if 'team' in project:
-                    commands.append(f"upsunstg team:project:add --team \"{project['team']}\" --project \"{project['name']}\" --yes")
-        
-        # Assign users to teams
-        if 'users' in self.config and self.config['users']:
-            for user in self.config['users']:
-                if 'team' in user:
-                    commands.append(f"upsunstg team:user:add --team \"{user['team']}\" --user \"{user['email']}\" --yes")
-        
-        return commands
     
     def generate_environment_commands(self) -> List[str]:
         """Generate environment setup commands."""
@@ -425,10 +393,8 @@ class DemoEcosystemManager:
             f.write("# Generated from demo-config.json\n\n")
             f.write("set -e  # Exit on any error\n\n")
             
-            for i, command in enumerate(commands, 1):
-                f.write(f"# Step {i}\n")
+            for command in commands:
                 f.write(f"{command}\n")
-                f.write("echo \"✓ Completed: {}\"\n\n".format(command))
         
         # Make the file executable
         os.chmod(filename, 0o755)
