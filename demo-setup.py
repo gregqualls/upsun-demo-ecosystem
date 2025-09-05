@@ -143,8 +143,12 @@ class DemoEcosystemManager:
         # Check if teams are supported before running these commands
         commands.append("# Note: Teams may not be available in staging environment")
         commands.append("# Check team support with: upsunstg team:list")
-        for team in self.config['teams']:
-            commands.append(f"upsunstg team:create --label \"{team['title']}\" --org \"{self._get_default_org()}\" --yes")
+        
+        if 'teams' in self.config and self.config['teams']:
+            for team in self.config['teams']:
+                commands.append(f"upsunstg team:create --label \"{team['title']}\" --org \"{self._get_default_org()}\" --yes")
+        else:
+            commands.append("# No teams configured")
         return commands
     
     def generate_user_commands(self) -> List[str]:
@@ -153,17 +157,20 @@ class DemoEcosystemManager:
         commands.append("# Note: Users will receive email invitations and must accept them")
         commands.append("# Users don't appear in user list until they accept invitations")
         
-        for user in self.config['users']:
-            # Get the first project for user assignment
-            if 'projects' in self.config and self.config['projects']:
-                project_id = self.config['projects'][0]['name']
-                if user['role'] == 'admin':
-                    commands.append(f"upsunstg user:add \"{user['email']}\" --role \"{user['role']}\" --project \"{project_id}\" --yes")
+        if 'users' in self.config and self.config['users']:
+            for user in self.config['users']:
+                # Get the first project for user assignment
+                if 'projects' in self.config and self.config['projects']:
+                    project_id = self.config['projects'][0]['name']
+                    if user['role'] == 'admin':
+                        commands.append(f"upsunstg user:add \"{user['email']}\" --role \"{user['role']}\" --project \"{project_id}\" --yes")
+                    else:
+                        # Non-admin users need environment-specific roles
+                        commands.append(f"upsunstg user:add \"{user['email']}\" --role \"production:{user['role']}\" --project \"{project_id}\" --yes")
                 else:
-                    # Non-admin users need environment-specific roles
-                    commands.append(f"upsunstg user:add \"{user['email']}\" --role \"production:{user['role']}\" --project \"{project_id}\" --yes")
-            else:
-                commands.append(f"# No projects available for user {user['email']}")
+                    commands.append(f"# No projects available for user {user['email']}")
+        else:
+            commands.append("# No users configured - current logged-in user will have access")
         return commands
     
     def generate_project_commands(self) -> List[str]:
@@ -206,9 +213,10 @@ class DemoEcosystemManager:
                     commands.append(f"upsunstg team:project:add --team \"{project['team']}\" --project \"{project['name']}\" --yes")
         
         # Assign users to teams
-        for user in self.config['users']:
-            if 'team' in user:
-                commands.append(f"upsunstg team:user:add --team \"{user['team']}\" --user \"{user['email']}\" --yes")
+        if 'users' in self.config and self.config['users']:
+            for user in self.config['users']:
+                if 'team' in user:
+                    commands.append(f"upsunstg team:user:add --team \"{user['team']}\" --user \"{user['email']}\" --yes")
         
         return commands
     
