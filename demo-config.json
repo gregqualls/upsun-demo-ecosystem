@@ -49,53 +49,53 @@
   },
   "projects": [
     {
-      "name": "bavaria-yachts",
-      "title": "Bavaria Yachts",
-      "description": "Bavaria Yachts marketing website",
+      "name": "blatavaria-yachts",
+      "title": "Blatavaria Yachts",
+      "description": "Blatavaria Yachts marketing website",
       "organization": "bmc-marketing",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["bavaria-yachts.com"],
-        "staging": ["bavaria-yachts-staging.bmcglobalgroup.com"]
+        "production": ["blatavaria-yachts.com"],
+        "staging": ["blatavaria-yachts-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "vandervalk-shipyard",
-      "title": "Vandervalk Shipyard",
-      "description": "Vandervalk Shipyard marketing website",
+      "name": "vandercon-shipyard",
+      "title": "Vandercon Shipyard",
+      "description": "Vandercon Shipyard marketing website",
       "organization": "bmc-marketing",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["vandervalk-shipyard.com"],
-        "staging": ["vandervalk-shipyard-staging.bmcglobalgroup.com"]
+        "production": ["vandercon-shipyard.com"],
+        "staging": ["vandercon-shipyard-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "y-co",
-      "title": "Y.CO",
-      "description": "Y.CO superyacht marketing website",
+      "name": "yght-co",
+      "title": "Yght.CO",
+      "description": "Yght.CO superyacht marketing website",
       "organization": "bmc-marketing",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["y.co"],
-        "staging": ["y-co-staging.bmcglobalgroup.com"]
+        "production": ["yght.co"],
+        "staging": ["yght-co-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "camper-nicholsons",
-      "title": "Camper and Nicholsons",
+      "name": "camperson-nichols",
+      "title": "Camperson and Nichols",
       "description": "Camper and Nicholsons marketing website",
       "organization": "bmc-marketing",
       "source": {
@@ -103,15 +103,15 @@
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["camperandnicholsons.com"],
-        "staging": ["camperandnicholsons-staging.bmcglobalgroup.com"]
+        "production": ["campersonandnichols.com"],
+        "staging": ["campersonandnichols-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "svb-marketing",
-      "title": "SVB Marketing",
-      "description": "SVB marketing website",
+      "name": "svbb-marketing",
+      "title": "SVBB Marketing",
+      "description": "SVBB marketing website",
       "organization": "bmc-marketing",
       "source": {
         "type": "github",
@@ -133,44 +133,44 @@
         "repository": "https://github.com/platformsh-templates/wordpress-woocommerce"
       },
       "domains": {
-        "production": ["store.svb.com"],
-        "staging": ["store-svb-staging.bmcglobalgroup.com"]
+        "production": ["store.svbb.com"],
+        "staging": ["store-svbb-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "sailing-frenchman-merch",
-      "title": "Sailing Frenchman Merch",
-      "description": "Sailing Frenchman merchandise store",
+      "name": "sailing-franceman-merch",
+      "title": "Sailing Franceman Merch",
+      "description": "Sailing Franceman merchandise store",
       "organization": "bmc-commerce",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/wordpress-woocommerce"
       },
       "domains": {
-        "production": ["shop.sailingfrenchman.com"],
-        "staging": ["shop-sailingfrenchman-staging.bmcglobalgroup.com"]
+        "production": ["shop.sailingfranceman.com"],
+        "staging": ["shop-sailingfranceman-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
       "name": "cn-blog",
-      "title": "Camper and Nicholsons Blog",
-      "description": "Camper and Nicholsons blog platform",
+      "title": "Camperson and Nichols Blog",
+      "description": "Camperson and Nichols blog platform",
       "organization": "bmc-blogs",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
       },
       "domains": {
-        "production": ["blog.camperandnicholsons.com"],
+        "production": ["blog.campersonandnichols.com"],
         "staging": ["blog-cn-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "svb-blog",
-      "title": "SVB Blog",
+      "name": "svbb-blog",
+      "title": "SVBB Blog",
       "description": "SVB blog platform",
       "organization": "bmc-blogs",
       "source": {
@@ -178,23 +178,23 @@
         "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
       },
       "domains": {
-        "production": ["blog.svb.com"],
-        "staging": ["blog-svb-staging.bmcglobalgroup.com"]
+        "production": ["blog.svbb.com"],
+        "staging": ["blog-svbb-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "sailing-frenchman-blog",
-      "title": "Sailing Frenchman Blog",
-      "description": "Sailing Frenchman blog platform",
+      "name": "sailing-franceman-blog",
+      "title": "Sailing Franceman Blog",
+      "description": "Sailing Franceman blog platform",
       "organization": "bmc-blogs",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
       },
       "domains": {
-        "production": ["blog.sailingfrenchman.com"],
-        "staging": ["blog-sailingfrenchman-staging.bmcglobalgroup.com"]
+        "production": ["blog.sailingfranceman.com"],
+        "staging": ["blog-sailingfranceman-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },

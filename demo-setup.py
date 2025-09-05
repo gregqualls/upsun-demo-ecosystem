@@ -122,19 +122,20 @@ class DemoEcosystemManager:
     def generate_organization_commands(self) -> List[str]:
         """Generate organization creation commands."""
         commands = []
+        commands.append("# Phase 2: Create Organizations")
+        commands.append("echo 'Creating organizations...'")
         
         # Fixed organizations
         for org in self.config['organizations']['fixed']:
             org_name = org['name'].lower().replace(' ', '-')
-            if org['type'] == 'fixed':
-                commands.append(f'upsunstg a:curl -X POST organizations -H "Content-Type: application/json" -d \'{{"label": "{org["label"]}", "type": "fixed"}}\'')
-            else:
-                commands.append(f"upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
+            commands.append(f"echo 'Creating Fixed organization: {org['label']}'")
+            commands.append(f"upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1 || upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d '{{\"label\": \"{org['label']}\", \"type\": \"fixed\"}}'")
         
         # Flex organizations
         for org in self.config['organizations']['flex']:
             org_name = org['name'].lower().replace(' ', '-')
-            commands.append(f"upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
+            commands.append(f"echo 'Creating Flex organization: {org['label']}'")
+            commands.append(f"upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1 || upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
         
         return commands
     
@@ -142,7 +143,6 @@ class DemoEcosystemManager:
         """Generate organization verification commands."""
         commands = []
         commands.append("# Phase 3: Verify Organizations are Active")
-        commands.append("# Wait for organizations to become active before creating projects")
         commands.append("echo 'Verifying organizations are active...'")
         
         # Get all organization names from config
@@ -155,7 +155,7 @@ class DemoEcosystemManager:
         
         # Add verification with retry logic
         commands.append("echo 'Checking organization status...'")
-        commands.append("for i in {1..5}; do")
+        commands.append("for i in {1..3}; do")
         commands.append("  echo \"Attempt $i: Checking organizations...\"")
         commands.append("  all_active=true")
         
@@ -171,8 +171,8 @@ class DemoEcosystemManager:
         commands.append("    echo 'All organizations are active!'")
         commands.append("    break")
         commands.append("  else")
-        commands.append("    echo 'Some organizations not ready, waiting 15 seconds...'")
-        commands.append("    sleep 15")
+        commands.append("    echo 'Some organizations not ready, waiting 10 seconds...'")
+        commands.append("    sleep 10")
         commands.append("  fi")
         commands.append("done")
         
@@ -221,11 +221,14 @@ class DemoEcosystemManager:
         """Generate project creation commands."""
         commands = []
         if 'projects' in self.config and self.config['projects']:
-            # Map organization names to their IDs
+            commands.append("# Phase 6: Create Projects")
+            commands.append("echo 'Creating projects...'")
+            
+            # Map organization names to their actual identifiers
             org_mapping = {
-                'bmc-marketing': '01k4cve9rt99wc5qe663z47pk2',
-                'bmc-commerce': '01k4cvechsb2a08qjaxvhwmqsa', 
-                'bmc-blogs': '01k4cvedvvjymjywzgv1cyn2qw',
+                'bmc-marketing': '01k4cw15spjkpt3scsamsjjdth',
+                'bmc-commerce': '01k4cw16sfv866fccapz1mkc44', 
+                'bmc-blogs': '01k4cw185wanfb1jr7skm3tsyb',
                 'bmc-emea': 'bmc-emea',
                 'bmc-usa': 'bmc-usa',
                 'bmc-sing': 'bmc-sing'
@@ -234,6 +237,7 @@ class DemoEcosystemManager:
             for project in self.config['projects']:
                 org_name = project['organization'].lower().replace(' ', '-')
                 org_id = org_mapping.get(org_name, org_name)
+                commands.append(f"echo 'Creating project: {project['title']} in {org_name}'")
                 
                 if project.get('source', {}).get('type') == 'github':
                     # For GitHub projects, use the repository URL
