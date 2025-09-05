@@ -48,35 +48,37 @@ class DemoEcosystemManager:
         # Phase 2: Organizations
         commands.extend(self.generate_organization_commands())
         
-        # Phase 3: Teams
+        # Phase 3: Organization Verification
+        commands.extend(self.generate_organization_verification_commands())
+        
+        # Phase 4: Teams
         commands.extend(self.generate_team_commands())
         
-        # Phase 4: Users
+        # Phase 5: Users
         commands.extend(self.generate_user_commands())
         
-        # Phase 5: Projects
+        # Phase 6: Projects
         commands.extend(self.generate_project_commands())
         
-        # Phase 6: Team-Project Assignments
+        # Phase 7: Team-Project Assignments
         commands.extend(self.generate_team_project_assignments())
         
-        # Phase 7: Environment Setup
+        # Phase 8: Environment Setup
         commands.extend(self.generate_environment_commands())
         
-        # Phase 8: Domain Configuration
+        # Phase 9: Domain Configuration
         commands.extend(self.generate_domain_commands())
         
-        # Phase 9: SSL Certificates
+        # Phase 10: SSL Certificates
         commands.extend(self.generate_certificate_commands())
         
-        # Phase 10: Environment Variables
+        # Phase 11: Environment Variables
         commands.extend(self.generate_variable_commands())
         
-        
-        # Phase 11: Integrations
+        # Phase 12: Integrations
         commands.extend(self.generate_integration_commands())
         
-        # Phase 12: Backups
+        # Phase 13: Backups
         commands.extend(self.generate_backup_commands())
         
         return commands
@@ -136,6 +138,48 @@ class DemoEcosystemManager:
         
         return commands
     
+    def generate_organization_verification_commands(self) -> List[str]:
+        """Generate organization verification commands."""
+        commands = []
+        commands.append("# Phase 3: Verify Organizations are Active")
+        commands.append("# Wait for organizations to become active before creating projects")
+        commands.append("echo 'Verifying organizations are active...'")
+        
+        # Get all organization names from config
+        org_names = []
+        if 'organizations' in self.config:
+            for org in self.config['organizations'].get('fixed', []):
+                org_names.append(org['name'].lower().replace(' ', '-'))
+            for org in self.config['organizations'].get('flex', []):
+                org_names.append(org['name'].lower().replace(' ', '-'))
+        
+        # Add verification with retry logic
+        commands.append("echo 'Checking organization status...'")
+        commands.append("for i in {1..5}; do")
+        commands.append("  echo \"Attempt $i: Checking organizations...\"")
+        commands.append("  all_active=true")
+        
+        for org_name in org_names:
+            commands.append(f"  if ! upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1; then")
+            commands.append(f"    echo \"  {org_name} not ready yet\"")
+            commands.append("    all_active=false")
+            commands.append("  else")
+            commands.append(f"    echo \"  {org_name} is active\"")
+            commands.append("  fi")
+        
+        commands.append("  if [ \"$all_active\" = true ]; then")
+        commands.append("    echo 'All organizations are active!'")
+        commands.append("    break")
+        commands.append("  else")
+        commands.append("    echo 'Some organizations not ready, waiting 15 seconds...'")
+        commands.append("    sleep 15")
+        commands.append("  fi")
+        commands.append("done")
+        
+        commands.append("echo 'Organization verification complete'")
+        
+        return commands
+    
     def generate_team_commands(self) -> List[str]:
         """Generate team creation commands."""
         commands = []
@@ -177,21 +221,32 @@ class DemoEcosystemManager:
         """Generate project creation commands."""
         commands = []
         if 'projects' in self.config and self.config['projects']:
+            # Map organization names to their IDs
+            org_mapping = {
+                'bmc-marketing': '01k4cve9rt99wc5qe663z47pk2',
+                'bmc-commerce': '01k4cvechsb2a08qjaxvhwmqsa', 
+                'bmc-blogs': '01k4cvedvvjymjywzgv1cyn2qw',
+                'bmc-emea': 'bmc-emea',
+                'bmc-usa': 'bmc-usa',
+                'bmc-sing': 'bmc-sing'
+            }
+            
             for project in self.config['projects']:
                 org_name = project['organization'].lower().replace(' ', '-')
+                org_id = org_mapping.get(org_name, org_name)
                 
                 if project.get('source', {}).get('type') == 'github':
                     # For GitHub projects, use the repository URL
                     repo_url = project['source']['repository']
                     if 'path' in project['source']:
                         # For repositories with subdirectories, note that manual setup may be required
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_name}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                         commands.append(f"# Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
                     else:
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_name}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                 else:
                     # For local projects, create without init-repo
-                    commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_name}\" --region \"bk3.recreation.plat.farm\" --yes")
+                    commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --yes")
                     commands.append(f"# Note: Local project {project['name']} will need to be connected manually")
         else:
             commands.append("# No projects configured")
