@@ -49,92 +49,242 @@
   },
   "projects": [
     {
-      "name": "marketing-website",
-      "title": "Marketing Website",
-      "description": "Main marketing and brand website",
+      "name": "bavaria-yachts",
+      "title": "Bavaria Yachts",
+      "description": "Bavaria Yachts marketing website",
       "organization": "bmc-marketing",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["www.bmcglobalgroup.com"],
-        "staging": ["staging.bmcglobalgroup.com"]
+        "production": ["bavaria-yachts.com"],
+        "staging": ["bavaria-yachts-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "ecommerce-store",
-      "title": "E-commerce Store",
-      "description": "Online retail platform",
-      "organization": "bmc-commerce",
-      "source": {
-        "type": "github",
-        "repository": "https://github.com/platformsh-templates/laravel"
-      },
-      "domains": {
-        "production": ["store.bmcglobalgroup.com"],
-        "staging": ["store-staging.bmcglobalgroup.com"]
-      },
-      "environments": ["production", "staging", "development"]
-    },
-    {
-      "name": "blog-platform",
-      "title": "Blog Platform",
-      "description": "Content and blog management system",
-      "organization": "bmc-blogs",
+      "name": "vandervalk-shipyard",
+      "title": "Vandervalk Shipyard",
+      "description": "Vandervalk Shipyard marketing website",
+      "organization": "bmc-marketing",
       "source": {
         "type": "github",
         "repository": "https://github.com/platformsh-templates/drupal10"
       },
       "domains": {
-        "production": ["blog.bmcglobalgroup.com"],
-        "staging": ["blog-staging.bmcglobalgroup.com"]
+        "production": ["vandervalk-shipyard.com"],
+        "staging": ["vandervalk-shipyard-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "emea-api",
-      "title": "EMEA API Services",
-      "description": "API services for EMEA region",
+      "name": "y-co",
+      "title": "Y.CO",
+      "description": "Y.CO superyacht marketing website",
+      "organization": "bmc-marketing",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/drupal10"
+      },
+      "domains": {
+        "production": ["y.co"],
+        "staging": ["y-co-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "camper-nicholsons",
+      "title": "Camper and Nicholsons",
+      "description": "Camper and Nicholsons marketing website",
+      "organization": "bmc-marketing",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/drupal10"
+      },
+      "domains": {
+        "production": ["camperandnicholsons.com"],
+        "staging": ["camperandnicholsons-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "svb-marketing",
+      "title": "SVB Marketing",
+      "description": "SVB marketing website",
+      "organization": "bmc-marketing",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/drupal10"
+      },
+      "domains": {
+        "production": ["svb.com"],
+        "staging": ["svb-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "svb-magento",
+      "title": "SVB Magento Store",
+      "description": "SVB e-commerce store with Magento",
+      "organization": "bmc-commerce",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/wordpress-woocommerce"
+      },
+      "domains": {
+        "production": ["store.svb.com"],
+        "staging": ["store-svb-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "sailing-frenchman-merch",
+      "title": "Sailing Frenchman Merch",
+      "description": "Sailing Frenchman merchandise store",
+      "organization": "bmc-commerce",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/wordpress-woocommerce"
+      },
+      "domains": {
+        "production": ["shop.sailingfrenchman.com"],
+        "staging": ["shop-sailingfrenchman-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "cn-blog",
+      "title": "Camper and Nicholsons Blog",
+      "description": "Camper and Nicholsons blog platform",
+      "organization": "bmc-blogs",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
+      },
+      "domains": {
+        "production": ["blog.camperandnicholsons.com"],
+        "staging": ["blog-cn-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "svb-blog",
+      "title": "SVB Blog",
+      "description": "SVB blog platform",
+      "organization": "bmc-blogs",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
+      },
+      "domains": {
+        "production": ["blog.svb.com"],
+        "staging": ["blog-svb-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "sailing-frenchman-blog",
+      "title": "Sailing Frenchman Blog",
+      "description": "Sailing Frenchman blog platform",
+      "organization": "bmc-blogs",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/platformsh-templates/wordpress-bedrock"
+      },
+      "domains": {
+        "production": ["blog.sailingfrenchman.com"],
+        "staging": ["blog-sailingfrenchman-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "emea-yacht-iot",
+      "title": "EMEA Yacht IoT Services",
+      "description": "IoT monitoring and management for yachts in EMEA region",
       "organization": "bmc-emea",
       "source": {
         "type": "github",
-        "repository": "https://github.com/upsun/snippets/tree/main/examples/drupal11"
+        "repository": "https://github.com/upsun/snippets/tree/main/examples/flask"
       },
       "domains": {
-        "production": ["api-emea.bmcglobalgroup.com"],
-        "staging": ["api-emea-staging.bmcglobalgroup.com"]
+        "production": ["iot-emea.bmcglobalgroup.com"],
+        "staging": ["iot-emea-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "usa-dashboard",
-      "title": "USA Operations Dashboard",
-      "description": "Operations dashboard for USA region",
+      "name": "emea-logistics",
+      "title": "EMEA Logistics Management",
+      "description": "Logistics and supply chain management for EMEA",
+      "organization": "bmc-emea",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/upsun/bigfoot-multiapp-example"
+      },
+      "domains": {
+        "production": ["logistics-emea.bmcglobalgroup.com"],
+        "staging": ["logistics-emea-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "usa-order-management",
+      "title": "USA Order Management System",
+      "description": "Order management and tracking system for USA operations",
       "organization": "bmc-usa",
       "source": {
         "type": "github",
         "repository": "https://github.com/upsun/snippets/tree/main/examples/demo-decouple-frontend"
       },
       "domains": {
-        "production": ["dashboard-usa.bmcglobalgroup.com"],
-        "staging": ["dashboard-usa-staging.bmcglobalgroup.com"]
+        "production": ["orders-usa.bmcglobalgroup.com"],
+        "staging": ["orders-usa-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     },
     {
-      "name": "singapore-portal",
-      "title": "Singapore Portal",
-      "description": "Customer portal for Singapore operations",
+      "name": "usa-fleet-tracking",
+      "title": "USA Fleet Tracking",
+      "description": "Real-time fleet tracking and management for USA",
+      "organization": "bmc-usa",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/upsun/demo-nix-js"
+      },
+      "domains": {
+        "production": ["fleet-usa.bmcglobalgroup.com"],
+        "staging": ["fleet-usa-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "singapore-booking",
+      "title": "Singapore Booking System",
+      "description": "Yacht booking and charter management for Singapore",
       "organization": "bmc-sing",
       "source": {
         "type": "github",
-        "repository": "https://github.com/upsun/snippets/tree/main/examples/drupal11"
+        "repository": "https://github.com/gmoigneu/upsun-rails-8-tutorial"
       },
       "domains": {
-        "production": ["portal-sg.bmcglobalgroup.com"],
-        "staging": ["portal-sg-staging.bmcglobalgroup.com"]
+        "production": ["booking-sg.bmcglobalgroup.com"],
+        "staging": ["booking-sg-staging.bmcglobalgroup.com"]
+      },
+      "environments": ["production", "staging", "development"]
+    },
+    {
+      "name": "singapore-maintenance",
+      "title": "Singapore Maintenance Portal",
+      "description": "Yacht maintenance and service management portal",
+      "organization": "bmc-sing",
+      "source": {
+        "type": "github",
+        "repository": "https://github.com/upsun/snippets/tree/main/examples/flask"
+      },
+      "domains": {
+        "production": ["maintenance-sg.bmcglobalgroup.com"],
+        "staging": ["maintenance-sg-staging.bmcglobalgroup.com"]
       },
       "environments": ["production", "staging", "development"]
     }
