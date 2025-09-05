@@ -11,59 +11,54 @@ A configuration-driven system for creating and managing complete demo ecosystems
 
 ## Files
 
+- `setup-demo.sh` - **One-command setup script** with prerequisites check and progress indicators
+- `cleanup-demo.sh` - **Safe cleanup script** with confirmation prompts
 - `demo-setup.py` - Main Python script that generates CLI commands from JSON configuration
-- `demo-config.json` - Complete BMC Global Group Inc. demo configuration
+- `demo-config.json` - Complete BMC Global Group Inc. yacht industry demo configuration
 - `example-config.json` - Example configuration with detailed documentation
 - `final-test-config.json` - Tested configuration with real GitHub repositories
 - `clilist.md` - Reference of available Upsun CLI commands
 
 ## Quick Start
 
-### 1. Prerequisites
+### 🚀 One-Command Setup (Recommended)
 
+```bash
+# Clone the repository
+git clone https://github.com/gregqualls/upsun-demo-ecosystem.git
+cd upsun-demo-ecosystem
+
+# Run the yacht industry demo (includes all prerequisites checks)
+./setup-demo.sh
+
+# Clean up when done
+./cleanup-demo.sh
+```
+
+### 📋 Prerequisites
+
+The setup script will check for these automatically:
 - Python 3.6+
 - Upsun Staging CLI (`upsunstg`) installed and authenticated
 - Access to Upsun staging environment
 - Git (for GitHub repository projects)
 
-### 2. Authentication
+### 🔧 Manual Setup (Advanced)
 
-Ensure you're logged in to Upsun:
-```bash
-upsunstg auth:info
-```
+If you prefer to run the components manually:
 
-If not authenticated, run:
 ```bash
+# 1. Authenticate with Upsun
 upsunstg auth:browser-login
-```
 
-### 3. Generate Commands
-
-```bash
-# Generate both setup and cleanup scripts using demo-config.json
-python3 demo-setup.py
-
-# Generate using a specific configuration file
-python3 demo-setup.py --config final-test-config.json
-
-# Generate only setup script
-python3 demo-setup.py --action setup
-
-# Generate only cleanup script
-python3 demo-setup.py --action cleanup
-```
-
-### 4. Execute Commands
-
-```bash
-# Make scripts executable
-chmod +x setup-demo-ecosystem.sh cleanup-demo-ecosystem.sh
-
-# Run setup (creates organizations, projects, users)
+# 2. Generate and run setup script
+python3 demo-setup.py --config demo-config.json --action setup
+chmod +x setup-demo-ecosystem.sh
 ./setup-demo-ecosystem.sh
 
-# Run cleanup when done (removes everything)
+# 3. Clean up when done
+python3 demo-setup.py --config demo-config.json --action cleanup
+chmod +x cleanup-demo-ecosystem.sh
 ./cleanup-demo-ecosystem.sh
 ```
 
