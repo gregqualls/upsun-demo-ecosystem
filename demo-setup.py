@@ -115,10 +115,14 @@ class DemoEcosystemManager:
         else:
             commands.append("# No users to delete")
         
-        # Delete all organizations (both fixed and flex use the same delete command)
-        for org in self.config['organizations']['fixed'] + self.config['organizations']['flex']:
-            org_name = org['name'].lower().replace(' ', '-')
-            commands.append(f"upsunstg organization:delete --org {org_name} --yes")
+        # Delete all organizations
+        commands.append("# Note: Deleting all organizations by listing them first")
+        commands.append("upsunstg organization:list --format plain --no-header | awk '{print $1}' | while read org_id; do")
+        commands.append("  if [ ! -z \"$org_id\" ] && [ \"$org_id\" != \"01k4606e9hqxyxdn2ph0k06ee1\" ]; then")
+        commands.append("    echo \"Deleting organization: $org_id\"")
+        commands.append("    upsunstg organization:delete --org \"$org_id\" --yes")
+        commands.append("  fi")
+        commands.append("done")
         
         return commands
     
