@@ -140,17 +140,32 @@ class DemoEcosystemManager:
         commands.append("# Phase 2: Create Organizations")
         commands.append("echo 'Creating organizations...'")
         
+        # Check if organizations already exist by label
+        commands.append("# Check for existing organizations by label")
+        commands.append("existing_orgs=$(upsunstg organization:list --format plain --no-header | awk '{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
+        
         # Fixed organizations
         for org in self.config['organizations']['fixed']:
-            org_name = org['name'].lower().replace(' ', '-')
-            commands.append(f"echo 'Creating Fixed organization: {org['label']}'")
-            commands.append(f"upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1 || upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d '{{\"label\": \"{org['label']}\", \"type\": \"fixed\"}}'")
+            org_label = org['label'].lower()
+            commands.append(f"echo 'Checking Fixed organization: {org['label']}'")
+            commands.append(f"if echo \"$existing_orgs\" | grep -q \"{org_label}\"; then")
+            commands.append(f"  echo '  {org['label']} already exists, skipping'")
+            commands.append("else")
+            commands.append(f"  echo '  Creating {org['label']}...'")
+            commands.append(f"  upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d '{{\"label\": \"{org['label']}\", \"type\": \"fixed\"}}'")
+            commands.append("fi")
         
         # Flex organizations
         for org in self.config['organizations']['flex']:
             org_name = org['name'].lower().replace(' ', '-')
-            commands.append(f"echo 'Creating Flex organization: {org['label']}'")
-            commands.append(f"upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1 || upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
+            org_label = org['label'].lower()
+            commands.append(f"echo 'Checking Flex organization: {org['label']}'")
+            commands.append(f"if echo \"$existing_orgs\" | grep -q \"{org_label}\"; then")
+            commands.append(f"  echo '  {org['label']} already exists, skipping'")
+            commands.append("else")
+            commands.append(f"  echo '  Creating {org['label']}...'")
+            commands.append(f"  upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
+            commands.append("fi")
         
         return commands
     
@@ -160,13 +175,13 @@ class DemoEcosystemManager:
         commands.append("# Phase 3: Verify Organizations are Active")
         commands.append("echo 'Verifying organizations are active...'")
         
-        # Get all organization names from config
-        org_names = []
+        # Get all organization labels from config
+        org_labels = []
         if 'organizations' in self.config:
             for org in self.config['organizations'].get('fixed', []):
-                org_names.append(org['name'].lower().replace(' ', '-'))
+                org_labels.append(org['label'].lower())
             for org in self.config['organizations'].get('flex', []):
-                org_names.append(org['name'].lower().replace(' ', '-'))
+                org_labels.append(org['label'].lower())
         
         # Add verification with retry logic
         commands.append("echo 'Checking organization status...'")
@@ -174,12 +189,12 @@ class DemoEcosystemManager:
         commands.append("  echo \"Attempt $i: Checking organizations...\"")
         commands.append("  all_active=true")
         
-        for org_name in org_names:
-            commands.append(f"  if ! upsunstg organization:info --org \"{org_name}\" > /dev/null 2>&1; then")
-            commands.append(f"    echo \"  {org_name} not ready yet\"")
+        for org_label in org_labels:
+            commands.append(f"  if ! upsunstg organization:list --format plain --no-header | awk '{{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}}' | tr '[:upper:]' '[:lower:]' | grep -q \"{org_label}\"; then")
+            commands.append(f"    echo \"  {org_label} not found yet\"")
             commands.append("    all_active=false")
             commands.append("  else")
-            commands.append(f"    echo \"  {org_name} is active\"")
+            commands.append(f"    echo \"  {org_label} is active\"")
             commands.append("  fi")
         
         commands.append("  if [ \"$all_active\" = true ]; then")
@@ -239,33 +254,29 @@ class DemoEcosystemManager:
             commands.append("# Phase 6: Create Projects")
             commands.append("echo 'Creating projects...'")
             
-            # Map organization names to their actual identifiers
-            org_mapping = {
-                'bmc-marketing': '01k4cw15spjkpt3scsamsjjdth',
-                'bmc-commerce': '01k4cw16sfv866fccapz1mkc44', 
-                'bmc-blogs': '01k4cw185wanfb1jr7skm3tsyb',
-                'bmc-emea': 'bmc-emea',
-                'bmc-usa': 'bmc-usa',
-                'bmc-sing': 'bmc-sing'
-            }
-            
             for project in self.config['projects']:
                 org_name = project['organization'].lower().replace(' ', '-')
-                org_id = org_mapping.get(org_name, org_name)
-                commands.append(f"echo 'Creating project: {project['title']} in {org_name}'")
+                org_label = project['organization'].replace('bmc-', 'BMC ').title()
+                commands.append(f"echo 'Creating project: {project['title']} in {org_label}'")
+                commands.append(f"# Get organization ID by label")
+                commands.append(f"org_id=$(upsunstg organization:list --format plain --no-header | grep -i \"{org_label}\" | head -1 | awk '{{print $1}}')")
+                commands.append(f"if [ -z \"$org_id\" ]; then")
+                commands.append(f"  echo \"Error: Organization {org_label} not found\"")
+                commands.append(f"  exit 1")
+                commands.append(f"fi")
                 
                 if project.get('source', {}).get('type') == 'github':
                     # For GitHub projects, use the repository URL
                     repo_url = project['source']['repository']
                     if 'path' in project['source']:
                         # For repositories with subdirectories, note that manual setup may be required
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                         commands.append(f"# Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
                     else:
-                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                 else:
                     # For local projects, create without init-repo
-                    commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"{org_id}\" --region \"bk3.recreation.plat.farm\" --yes")
+                    commands.append(f"upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --yes")
                     commands.append(f"# Note: Local project {project['name']} will need to be connected manually")
         else:
             commands.append("# No projects configured")
@@ -297,41 +308,47 @@ class DemoEcosystemManager:
     def generate_environment_commands(self) -> List[str]:
         """Generate environment setup commands."""
         commands = []
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                for env in project['environments']:
-                    if env == 'production':
-                        commands.append(f"upsunstg environment:activate --project {project['name']} --environment production")
-                    else:
-                        commands.append(f"upsunstg environment:branch --project {project['name']} --environment {env}")
-        else:
-            commands.append("# No projects configured")
+        commands.append("# Note: Environment commands disabled - projects are created with production environment by default")
+        commands.append("# To create additional environments, use the Upsun console or CLI manually")
+        # if 'projects' in self.config and self.config['projects']:
+        #     for project in self.config['projects']:
+        #         for env in project['environments']:
+        #             if env == 'production':
+        #                 commands.append(f"upsunstg environment:activate --project {project['name']} --environment production")
+        #             else:
+        #                 commands.append(f"upsunstg environment:branch --project {project['name']} --environment {env}")
+        # else:
+        #     commands.append("# No projects configured")
         return commands
     
     def generate_domain_commands(self) -> List[str]:
         """Generate domain configuration commands."""
         commands = []
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                if 'domains' in project:
-                    for env, domains in project['domains'].items():
-                        for domain in domains:
-                            commands.append(f"upsunstg domain:add --project {project['name']} --domain {domain}")
-        else:
-            commands.append("# No projects configured")
+        commands.append("# Note: Domain commands disabled - configure domains manually in Upsun console")
+        commands.append("# To add domains, use: upsunstg domain:add <domain-name> --project <project-id>")
+        # if 'projects' in self.config and self.config['projects']:
+        #     for project in self.config['projects']:
+        #         if 'domains' in project:
+        #             for env, domains in project['domains'].items():
+        #                 for domain in domains:
+        #                     commands.append(f"upsunstg domain:add --project {project['name']} --domain {domain}")
+        # else:
+        #     commands.append("# No projects configured")
         return commands
     
     def generate_certificate_commands(self) -> List[str]:
         """Generate SSL certificate commands."""
         commands = []
-        if 'projects' in self.config and self.config['projects']:
-            for project in self.config['projects']:
-                if 'domains' in project and 'production' in project['domains']:
-                    for domain in project['domains']['production']:
-                        cert_name = domain.replace('.', '-')
-                        commands.append(f"upsunstg certificate:add --project {project['name']} --certificate-file {cert_name}.crt --key-file {cert_name}.key")
-        else:
-            commands.append("# No projects configured")
+        commands.append("# Note: Certificate commands disabled - configure SSL certificates manually in Upsun console")
+        commands.append("# To add certificates, use: upsunstg certificate:add <cert-name> --project <project-id>")
+        # if 'projects' in self.config and self.config['projects']:
+        #     for project in self.config['projects']:
+        #         if 'domains' in project and 'production' in project['domains']:
+        #             for domain in project['domains']['production']:
+        #                 cert_name = domain.replace('.', '-')
+        #                 commands.append(f"upsunstg certificate:add --project {project['name']} --certificate-file {cert_name}.crt --key-file {cert_name}.key")
+        # else:
+        #     commands.append("# No projects configured")
         return commands
     
     def generate_variable_commands(self) -> List[str]:
