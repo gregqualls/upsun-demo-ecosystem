@@ -88,21 +88,32 @@ class DemoEcosystemManager:
         commands = []
         
         # Delete all projects
-        for project in self.config['projects']:
-            commands.append(f"upsunstg project:delete --project {project['name']} --yes")
+        commands.append("# Note: Deleting all projects by listing them first")
+        commands.append("upsunstg project:list --pipe | while read project_id; do")
+        commands.append("  if [ ! -z \"$project_id\" ]; then")
+        commands.append("    echo \"Deleting project: $project_id\"")
+        commands.append("    upsunstg project:delete --project \"$project_id\" --yes")
+        commands.append("  fi")
+        commands.append("done")
         
         # Delete all teams
         commands.append("# Note: Teams may not be available in staging environment")
-        for team in self.config['teams']:
-            commands.append(f"upsunstg team:delete --team \"{team['name']}\" --yes")
+        if 'teams' in self.config and self.config['teams']:
+            for team in self.config['teams']:
+                commands.append(f"upsunstg team:delete --team \"{team['name']}\" --yes")
+        else:
+            commands.append("# No teams to delete")
         
         # Delete all users
-        for user in self.config['users']:
-            if 'projects' in self.config and self.config['projects']:
-                project_id = self.config['projects'][0]['name']
-                commands.append(f"upsunstg user:delete \"{user['email']}\" --project \"{project_id}\" --yes")
-            else:
-                commands.append(f"# No projects available for user deletion {user['email']}")
+        if 'users' in self.config and self.config['users']:
+            for user in self.config['users']:
+                if 'projects' in self.config and self.config['projects']:
+                    project_id = self.config['projects'][0]['name']
+                    commands.append(f"upsunstg user:delete \"{user['email']}\" --project \"{project_id}\" --yes")
+                else:
+                    commands.append(f"# No projects available for user deletion {user['email']}")
+        else:
+            commands.append("# No users to delete")
         
         # Delete all organizations (both fixed and flex use the same delete command)
         for org in self.config['organizations']['fixed'] + self.config['organizations']['flex']:
