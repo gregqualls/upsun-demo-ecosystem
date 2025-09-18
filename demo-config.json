@@ -217,8 +217,8 @@
       "description": "IoT monitoring and management for yachts in EMEA region",
       "organization": "bmc-europe",
       "source": {
-        "type": "github",
-        "repository": "https://github.com/upsun/snippets/tree/main/examples/flask"
+        "type": "local",
+        "path": "examples/flask-yacht-iot"
       },
       "domains": {
         "production": ["iot-emea.bmcglobalgroup.com"],
@@ -232,8 +232,8 @@
       "description": "Logistics and supply chain management for EMEA",
       "organization": "bmc-europe",
       "source": {
-        "type": "github",
-        "repository": "https://github.com/upsun/bigfoot-multiapp-example"
+        "type": "local",
+        "path": "examples/demo-decouple-frontend"
       },
       "domains": {
         "production": ["logistics-emea.bmcglobalgroup.com"],
@@ -247,8 +247,8 @@
       "description": "Order management and tracking system for USA operations",
       "organization": "bmc-usa",
       "source": {
-        "type": "github",
-        "repository": "https://github.com/upsun/snippets/tree/main/examples/demo-decouple-frontend"
+        "type": "local",
+        "path": "examples/demo-decouple-frontend"
       },
       "domains": {
         "production": ["orders-usa.bmcglobalgroup.com"],
@@ -262,8 +262,8 @@
       "description": "Real-time fleet tracking and management for USA",
       "organization": "bmc-usa",
       "source": {
-        "type": "github",
-        "repository": "https://github.com/upsun/demo-nix-js"
+        "type": "local",
+        "path": "examples/demo-decouple-frontend"
       },
       "domains": {
         "production": ["fleet-usa.bmcglobalgroup.com"],
@@ -277,8 +277,8 @@
       "description": "Yacht booking and charter management for Singapore",
       "organization": "bmc-sing",
       "source": {
-        "type": "github",
-        "repository": "https://github.com/gmoigneu/upsun-rails-8-tutorial"
+        "type": "local",
+        "path": "examples/wordpress-blog"
       },
       "domains": {
         "production": ["booking-sg.bmcglobalgroup.com"],

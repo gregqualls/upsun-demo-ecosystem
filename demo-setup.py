@@ -346,8 +346,23 @@ class DemoEcosystemManager:
             commands.append("  echo \"[$$]   Using organization ID: $org_id\"")
             commands.append("  ")
             commands.append("  if [ -n \"$repo_url\" ]; then")
+            commands.append("    # Check if this is a local path")
+            commands.append("    if echo \"$repo_url\" | grep -q \"^examples/\"; then")
+            commands.append("      echo \"[$$]   Using local example: $repo_url\"")
+            commands.append(f"      {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
+            commands.append("      ")
+            commands.append("      # Copy local example files to project")
+            commands.append("      echo \"[$$]   Copying local example files...\"")
+            commands.append("      cp -r \"$repo_url/\"* . 2>/dev/null || true")
+            commands.append("      cp -r \"$repo_url/\".* . 2>/dev/null || true")
+            commands.append("      echo \"[$$]   ✓ Local example files copied\"")
+            commands.append("      ")
+            commands.append("      # Add and commit the files")
+            commands.append("      git add .")
+            commands.append("      git commit -m \"Initial commit from local example: $repo_url\" || true")
+            commands.append("      git push origin main || true")
             commands.append("    # Check if this is a subdirectory path (contains /tree/)")
-            commands.append("    if echo \"$repo_url\" | grep -q \"/tree/\"; then")
+            commands.append("    elif echo \"$repo_url\" | grep -q \"/tree/\"; then")
             commands.append("      echo \"[$$]   Detected subdirectory path, creating project first...\"")
             commands.append(f"      {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
             commands.append("      ")
@@ -365,6 +380,7 @@ class DemoEcosystemManager:
             commands.append("      # Copy subdirectory contents to project")
             commands.append("      if [ -d \"$temp_dir/$subdir_path\" ]; then")
             commands.append("        echo \"[$$]   Copying subdirectory contents...\"")
+            commands.append("        # Copy all files and directories from the subdirectory")
             commands.append("        cp -r \"$temp_dir/$subdir_path/\"* . 2>/dev/null || true")
             commands.append("        cp -r \"$temp_dir/$subdir_path/\".* . 2>/dev/null || true")
             commands.append("        echo \"[$$]   ✓ Subdirectory contents copied\"")
@@ -372,6 +388,12 @@ class DemoEcosystemManager:
             commands.append("        echo \"[$$]   ⚠ Subdirectory $subdir_path not found, using root directory\"")
             commands.append("        cp -r \"$temp_dir/\"* . 2>/dev/null || true")
             commands.append("        cp -r \"$temp_dir/\".* . 2>/dev/null || true")
+            commands.append("      fi")
+            commands.append("      ")
+            commands.append("      # Remove any root-level .upsun config that might have been copied")
+            commands.append("      if [ -f \".upsun/config.yaml\" ] && [ -f \"$temp_dir/$subdir_path/.upsun/config.yaml\" ]; then")
+            commands.append("        echo \"[$$]   Using subdirectory-specific .upsun/config.yaml\"")
+            commands.append("        cp \"$temp_dir/$subdir_path/.upsun/config.yaml\" \".upsun/config.yaml\"")
             commands.append("      fi")
             commands.append("      ")
             commands.append("      # Clean up temporary directory")
@@ -398,7 +420,9 @@ class DemoEcosystemManager:
             commands.append(f"      {self.cli('auth:browser-login')} --no-browser")
             commands.append("      # Retry project creation")
             commands.append("      if [ -n \"$repo_url\" ]; then")
-            commands.append("        if echo \"$repo_url\" | grep -q \"/tree/\"; then")
+            commands.append("        if echo \"$repo_url\" | grep -q \"^examples/\"; then")
+            commands.append(f"          {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
+            commands.append("        elif echo \"$repo_url\" | grep -q \"/tree/\"; then")
             commands.append(f"          {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
             commands.append("        else")
             commands.append(f"          {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --init-repo \"$repo_url\" --yes")
@@ -433,7 +457,16 @@ class DemoEcosystemManager:
                 org_replacement = self.config.get('settings', {}).get('organization_prefix_replacement', 'BMC ')
                 org_label = project['organization'].replace(org_prefix, org_replacement).title()
                 project_title = project['title']
-                repo_url = project['source'].get('repository', '') if 'source' in project and project['source'].get('type') == 'github' else ''
+                # Handle both local and GitHub sources
+                if 'source' in project:
+                    if project['source'].get('type') == 'local':
+                        repo_url = project['source'].get('path', '')
+                    elif project['source'].get('type') == 'github':
+                        repo_url = project['source'].get('repository', '')
+                    else:
+                        repo_url = ''
+                else:
+                    repo_url = ''
                 project_name = project['name']
                 
                 commands.append(f"# Creating project {i+1}/{len(self.config['projects'])}: {project_title}")
