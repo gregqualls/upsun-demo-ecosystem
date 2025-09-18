@@ -134,6 +134,15 @@ if [ $? -eq 0 ]; then
         echo ""
         echo "✅ Demo ecosystem cleanup completed successfully!"
         echo "All projects and organizations have been deleted."
+        echo " Have a nice day!"
+        echo ""
+        echo "🔗 View your projects at: https://console.upsun.plat.farm"
+        echo ""
+        echo "🧹 To clean up when done, run: ./cleanup-demo.sh"
+        echo ""
+        echo "🔗 View your projects at: https://console.upsun.plat.farm"
+        echo ""
+        echo "🧹 To clean up when done, run: ./cleanup-demo.sh"
     else
         echo "❌ Cleanup failed. Check the output above for errors."
         exit 1
