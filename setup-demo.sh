@@ -5,6 +5,9 @@
 
 set -e  # Exit on any error
 
+# Record start time
+START_TIME=$(date +%s)
+
 echo "🚀 Upsun Demo Ecosystem Setup"
 echo "=============================="
 echo ""
@@ -49,6 +52,12 @@ if [ $? -eq 0 ]; then
     ./setup-demo-ecosystem.sh
     
     if [ $? -eq 0 ]; then
+        # Calculate total time
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - START_TIME))
+        MINUTES=$((DURATION / 60))
+        SECONDS=$((DURATION % 60))
+        
         echo ""
         echo "🎉 Demo ecosystem setup completed successfully!"
         echo ""
@@ -59,6 +68,8 @@ if [ $? -eq 0 ]; then
         echo "  • E-commerce stores (WordPress WooCommerce)"
         echo "  • Blog platforms (WordPress Bedrock)"
         echo "  • Regional business applications (Flask, Rails, etc.)"
+        echo ""
+        echo "⏱️  Total setup time: ${MINUTES}m ${SECONDS}s"
         echo ""
         echo "🔗 View your projects at: https://console.upsun.plat.farm"
         echo ""

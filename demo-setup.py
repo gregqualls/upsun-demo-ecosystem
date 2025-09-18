@@ -276,24 +276,32 @@ class DemoEcosystemManager:
                 
                 # Get all organization IDs
                 commands.append("# Get all organization IDs")
-                commands.append("org_ids=$(upsunstg organization:list --format plain --no-header | awk '{print $1}')")
+                cli_cmd = self.cli('organization:list')
+                org_list_cmd = "org_ids=$(" + cli_cmd + " --format plain --no-header | awk '{print $1}')"
+                commands.append(org_list_cmd)
                 
                 # Invite to all organizations
                 commands.append("# Invite to all organizations")
                 commands.append("for org_id in $org_ids; do")
-                commands.append(f"  echo '  Inviting to organization: $org_id'")
-                commands.append(f"  upsunstg organization:user:add --org \"$org_id\" --email \"{user['email']}\" --role developer --yes 2>/dev/null || echo '    ⚠ Failed to invite to org $org_id'")
+                commands.append("  echo '  Inviting to organization: $org_id'")
+                cli_cmd = self.cli('organization:user:add')
+                org_invite_cmd = "  " + cli_cmd + " --org \"$org_id\" \"" + user['email'] + "\" --permission projects:create --permission projects:list --yes 2>/dev/null || echo '    ⚠ Failed to invite to org $org_id'"
+                commands.append(org_invite_cmd)
                 commands.append("done")
                 
                 # Get all project IDs
                 commands.append("# Get all project IDs")
-                commands.append("project_ids=$(upsunstg project:list --pipe)")
+                cli_cmd = self.cli('project:list')
+                project_list_cmd = "project_ids=$(" + cli_cmd + " --pipe)"
+                commands.append(project_list_cmd)
                 
                 # Invite to all projects
                 commands.append("# Invite to all projects")
                 commands.append("for project_id in $project_ids; do")
-                commands.append(f"  echo '  Inviting to project: $project_id'")
-                commands.append(f"  upsunstg project:user:add --project \"$project_id\" --email \"{user['email']}\" --role developer --yes 2>/dev/null || echo '    ⚠ Failed to invite to project $project_id'")
+                commands.append("  echo '  Inviting to project: $project_id'")
+                cli_cmd = self.cli('user:add')
+                project_invite_cmd = "  " + cli_cmd + " --project \"$project_id\" \"" + user['email'] + "\" --role admin --yes 2>/dev/null || echo '    ⚠ Failed to invite to project $project_id'"
+                commands.append(project_invite_cmd)
                 commands.append("done")
                 
                 commands.append(f"echo '✓ User {user['name']} invitation process completed'")
@@ -320,7 +328,10 @@ class DemoEcosystemManager:
             commands.append("  local project_name=\"$4\"")
             commands.append("  ")
             commands.append("  echo \"[$$] Checking project: $project_title in $org_label\"")
-            commands.append(f"  if {self.cli('project:list')} --pipe | grep -q \"$project_title\"; then")
+            commands.append("  # Check if project already exists by title (case-insensitive)")
+            commands.append(f"  existing_projects=$({self.cli('project:list')} --format plain --no-header 2>/dev/null | awk '{{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}}' | tr '[:upper:]' '[:lower:]')")
+            commands.append("  project_title_lower=$(echo \"$project_title\" | tr '[:upper:]' '[:lower:]')")
+            commands.append("  if echo \"$existing_projects\" | grep -q \"$project_title_lower\"; then")
             commands.append("    echo \"[$$]   $project_title already exists, skipping\"")
             commands.append("    return 0")
             commands.append("  fi")
@@ -341,8 +352,25 @@ class DemoEcosystemManager:
             commands.append("    echo \"[$$]   Note: Local project $project_name will need to be connected manually\"")
             commands.append("  fi")
             commands.append("  ")
+            commands.append("  # Check if authentication expired and re-authenticate if needed")
+            commands.append("  if [ $? -ne 0 ]; then")
+            commands.append("    echo \"[$$]   Authentication may have expired, checking...\"")
+            commands.append(f"    if ! {self.cli('auth:info')} >/dev/null 2>&1; then")
+            commands.append("      echo \"[$$]   Re-authenticating...\"")
+            commands.append(f"      {self.cli('auth:browser-login')} --no-browser")
+            commands.append("      # Retry project creation")
+            commands.append("      if [ -n \"$repo_url\" ]; then")
+            commands.append(f"        {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --init-repo \"$repo_url\" --yes")
+            commands.append("      else")
+            commands.append(f"        {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
+            commands.append("      fi")
+            commands.append("    fi")
+            commands.append("  fi")
+            commands.append("  ")
             commands.append("  if [ $? -eq 0 ]; then")
             commands.append("    echo \"[$$]   ✓ $project_title created successfully\"")
+            commands.append("    # Small delay to allow project to be visible in listings")
+            commands.append("    sleep 2")
             commands.append("  else")
             commands.append("    echo \"[$$]   ❌ Failed to create $project_title\"")
             commands.append("  fi")
@@ -353,9 +381,11 @@ class DemoEcosystemManager:
             commands.append("export -f create_project")
             commands.append("")
             
-            # Start all projects in parallel
-            commands.append("# Start all project creation processes in parallel")
-            commands.append("pids=()")
+            # Create projects sequentially to avoid rate limiting
+            commands.append("# Create projects sequentially to avoid rate limiting")
+            commands.append("")
+            
+            # Create each project one by one
             for i, project in enumerate(self.config['projects']):
                 org_prefix = self.config.get('settings', {}).get('organization_prefix', 'bmc-')
                 org_replacement = self.config.get('settings', {}).get('organization_prefix_replacement', 'BMC ')
@@ -364,19 +394,14 @@ class DemoEcosystemManager:
                 repo_url = project['source'].get('repository', '') if 'source' in project and project['source'].get('type') == 'github' else ''
                 project_name = project['name']
                 
-                commands.append(f"# Starting project {i+1}: {project_title}")
-                commands.append(f"create_project \"{project_title}\" \"{org_label}\" \"{repo_url}\" \"{project_name}\" &")
-                commands.append(f"pids+=($!)")
+                commands.append(f"# Creating project {i+1}/{len(self.config['projects'])}: {project_title}")
+                commands.append(f"create_project \"{project_title}\" \"{org_label}\" \"{repo_url}\" \"{project_name}\"")
+                commands.append("")
+                commands.append("# Wait 5 seconds between projects to avoid rate limiting")
+                commands.append("sleep 5")
                 commands.append("")
             
-            # Wait for all background processes to complete
-            commands.append("# Wait for all project creation processes to complete")
-            commands.append("echo 'Waiting for all projects to be created...'")
-            commands.append("for pid in \"${pids[@]}\"; do")
-            commands.append("  wait $pid")
-            commands.append("done")
-            commands.append("")
-            commands.append("echo 'All project creation processes completed!'")
+            commands.append("echo 'All projects created successfully!'")
             commands.append("")
         else:
             commands.append("# No projects configured")
