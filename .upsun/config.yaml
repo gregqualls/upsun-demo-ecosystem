@@ -36,9 +36,9 @@ applications:
       # Commands are run once after deployment to start the application process.
       # More information: https://docs.upsun.com/create-apps/app-reference.html#web-commands
       commands:
-        # The command to launch your app. If it terminates, it’s restarted immediately.
+        # The command to launch your app. If it terminates, it's restarted immediately.
         # You can use the $PORT or the $SOCKET environment variable depending on the socket family of your upstream
-        start: "flask run -p $PORT"
+        start: "gunicorn --bind 0.0.0.0:$PORT app:app"
       # You can listen to a UNIX socket (unix) or a TCP port (tcp, default).
       # Whether your app should speak to the webserver via TCP or Unix socket. Defaults to tcp
       # More information: https://docs.upsun.com/create-apps/app-reference.html#where-to-listen
@@ -97,14 +97,12 @@ applications:
         set -eux
         pip install --upgrade pip
         pip install -r requirements.txt
-        npm install 
 
       # The deploy hook is run after the app container has been started, but before it has started accepting requests.
       # More information: https://docs.upsun.com/create-apps/hooks/hooks-comparison.html#deploy-hook
       deploy: |
         set -eux
-        npm run build   
-        flask db upgrade
+        echo "Flask application deployed successfully"
 
       # The post_deploy hook is run after the app container has been started and after it has started accepting requests.
       # More information: https://docs.upsun.com/create-apps/hooks/hooks-comparison.html#deploy-hook
