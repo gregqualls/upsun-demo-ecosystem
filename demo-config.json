@@ -5,6 +5,12 @@
     "description": "Technology Holding Company",
     "size": "Small to medium enterprise (50-100 employees)"
   },
+  "settings": {
+    "region": "plc.recreation.plat.farm",
+    "organization_prefix": "bmc-",
+    "organization_prefix_replacement": "BMC ",
+    "use_production": false
+  },
   "users": [
     {
       "email": "kemi.ojogbede@platform.sh",
@@ -209,7 +215,7 @@
       "name": "emea-yacht-iot",
       "title": "EMEA Yacht IoT Services",
       "description": "IoT monitoring and management for yachts in EMEA region",
-      "organization": "bmc-emea",
+      "organization": "bmc-europe",
       "source": {
         "type": "github",
         "repository": "https://github.com/upsun/snippets/tree/main/examples/flask"
@@ -224,7 +230,7 @@
       "name": "emea-logistics",
       "title": "EMEA Logistics Management",
       "description": "Logistics and supply chain management for EMEA",
-      "organization": "bmc-emea",
+      "organization": "bmc-europe",
       "source": {
         "type": "github",
         "repository": "https://github.com/upsun/bigfoot-multiapp-example"

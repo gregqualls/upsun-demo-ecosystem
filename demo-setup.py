@@ -17,6 +17,7 @@ class DemoEcosystemManager:
         """Initialize the demo ecosystem manager with configuration."""
         self.config_file = config_file
         self.config = self.load_config()
+        self.cli_command = self.get_cli_command()
         
     def load_config(self) -> Dict[str, Any]:
         """Load configuration from JSON file."""
@@ -29,6 +30,15 @@ class DemoEcosystemManager:
         except json.JSONDecodeError as e:
             print(f"Error: Invalid JSON in configuration file: {e}")
             sys.exit(1)
+    
+    def get_cli_command(self) -> str:
+        """Get the appropriate CLI command based on configuration."""
+        use_production = self.config.get('settings', {}).get('use_production', False)
+        return 'upsun' if use_production else 'upsunstg'
+    
+    def cli(self, command: str) -> str:
+        """Generate a CLI command with the appropriate prefix."""
+        return f"{self.cli_command} {command}"
     
     def _get_default_org(self) -> str:
         """Get the first available organization name."""
@@ -86,10 +96,10 @@ class DemoEcosystemManager:
         # Delete all projects
         commands.append("# Phase 1: Delete all projects")
         commands.append("echo 'Deleting all projects...'")
-        commands.append("upsunstg project:list --pipe | while read project_id; do")
+        commands.append(f"{self.cli('project:list')} --pipe | while read project_id; do")
         commands.append("  if [ ! -z \"$project_id\" ]; then")
         commands.append("    echo \"Deleting project: $project_id\"")
-        commands.append("    upsunstg project:delete --project \"$project_id\" --yes")
+        commands.append(f"    {self.cli('project:delete')} --project \"$project_id\" --yes")
         commands.append("  fi")
         commands.append("done")
         
@@ -97,7 +107,7 @@ class DemoEcosystemManager:
         commands.append("# Phase 2: Wait for projects to be fully deleted from system cache")
         commands.append("echo 'Waiting for projects to be fully deleted from system cache...'")
         commands.append("for i in {1..5}; do")
-        commands.append("  remaining_projects=$(upsunstg project:list --pipe | wc -l)")
+        commands.append(f"  remaining_projects=$({self.cli('project:list')} --pipe | wc -l)")
         commands.append("  if [ \"$remaining_projects\" -eq 0 ]; then")
         commands.append("    echo 'All projects successfully deleted'")
         commands.append("    break")
@@ -138,7 +148,7 @@ class DemoEcosystemManager:
         return [
             "# Note: User should already be logged in to Upsun",
             "# If not logged in, run: upsunstg auth:browser-login",
-            "upsunstg auth:info"
+            self.cli("auth:info")
         ]
     
     def generate_organization_commands(self) -> List[str]:
@@ -149,7 +159,7 @@ class DemoEcosystemManager:
         
         # Check if organizations already exist by label only
         commands.append("# Check for existing organizations by label")
-        commands.append("existing_orgs=$(upsunstg organization:list --format plain --no-header | awk '{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
+        commands.append(f"existing_orgs=$({self.cli('organization:list')} --format plain --no-header | awk '{{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
         
         # Fixed organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['fixed']:
@@ -161,7 +171,7 @@ class DemoEcosystemManager:
             commands.append(f"  echo '  Creating {org['label']}...'")
             commands.append(f"  # Generate unique name with timestamp")
             commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
-            commands.append(f"  if upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d \"{{\\\"label\\\": \\\"{org['label']}\\\", \\\"name\\\": \\\"$unique_name\\\", \\\"type\\\": \\\"fixed\\\"}}\" 2>/dev/null; then")
+            commands.append(f"  if {self.cli('a:curl')} -X POST organizations -H \"Content-Type: application/json\" -d \"{{\\\"label\\\": \\\"{org['label']}\\\", \\\"name\\\": \\\"$unique_name\\\", \\\"type\\\": \\\"fixed\\\"}}\" 2>/dev/null; then")
             commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
             commands.append(f"    sleep 10  # Rate limiting delay after creation")
             commands.append("  else")
@@ -180,7 +190,7 @@ class DemoEcosystemManager:
             commands.append(f"  echo '  Creating {org['label']}...'")
             commands.append(f"  # Generate unique name with timestamp")
             commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
-            commands.append(f"  if upsunstg organization:create --label \"{org['label']}\" --name \"$unique_name\" --yes 2>/dev/null; then")
+            commands.append(f"  if {self.cli('organization:create')} --label \"{org['label']}\" --name \"$unique_name\" --yes 2>/dev/null; then")
             commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
             commands.append(f"    sleep 15  # Rate limiting delay after creation")
             commands.append("  else")
@@ -293,45 +303,81 @@ class DemoEcosystemManager:
         return commands
     
     def generate_project_commands(self) -> List[str]:
-        """Generate project creation commands."""
+        """Generate project creation commands with parallel execution."""
         commands = []
         if 'projects' in self.config and self.config['projects']:
-            commands.append("# Phase 6: Create Projects")
-            commands.append("echo 'Creating projects...'")
+            commands.append("# Phase 6: Create Projects (Parallel)")
+            commands.append("echo 'Creating projects in parallel...'")
+            commands.append("echo 'This will start multiple project creation processes simultaneously'")
+            commands.append("")
             
-            for project in self.config['projects']:
-                org_name = project['organization'].lower().replace(' ', '-')
-                org_label = project['organization'].replace('bmc-', 'BMC ').title()
+            # Create a function to handle individual project creation
+            commands.append("# Function to create a single project")
+            commands.append("create_project() {")
+            commands.append("  local project_title=\"$1\"")
+            commands.append("  local org_label=\"$2\"")
+            commands.append("  local repo_url=\"$3\"")
+            commands.append("  local project_name=\"$4\"")
+            commands.append("  ")
+            commands.append("  echo \"[$$] Checking project: $project_title in $org_label\"")
+            commands.append(f"  if {self.cli('project:list')} --pipe | grep -q \"$project_title\"; then")
+            commands.append("    echo \"[$$]   $project_title already exists, skipping\"")
+            commands.append("    return 0")
+            commands.append("  fi")
+            commands.append("  ")
+            commands.append("  echo \"[$$]   Creating $project_title...\"")
+            commands.append(f"  org_id=$({self.cli('organization:list')} --format plain --no-header | grep -i \"$org_label\" | head -1 | awk '{{print $1}}')")
+            commands.append("  if [ -z \"$org_id\" ]; then")
+            commands.append("    echo \"[$$]   ❌ Organization $org_label not found, skipping project\"")
+            commands.append("    return 1")
+            commands.append("  fi")
+            commands.append("  ")
+            commands.append("  echo \"[$$]   Using organization ID: $org_id\"")
+            commands.append("  ")
+            commands.append("  if [ -n \"$repo_url\" ]; then")
+            commands.append(f"    {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --init-repo \"$repo_url\" --yes")
+            commands.append("  else")
+            commands.append(f"    {self.cli('project:create')} --title \"$project_title\" --org \"$org_id\" --region \"{self.config.get('settings', {}).get('region', 'plc.recreation.plat.farm')}\" --yes")
+            commands.append("    echo \"[$$]   Note: Local project $project_name will need to be connected manually\"")
+            commands.append("  fi")
+            commands.append("  ")
+            commands.append("  if [ $? -eq 0 ]; then")
+            commands.append("    echo \"[$$]   ✓ $project_title created successfully\"")
+            commands.append("  else")
+            commands.append("    echo \"[$$]   ❌ Failed to create $project_title\"")
+            commands.append("  fi")
+            commands.append("}")
+            commands.append("")
+            
+            # Export the function so it can be used in background processes
+            commands.append("export -f create_project")
+            commands.append("")
+            
+            # Start all projects in parallel
+            commands.append("# Start all project creation processes in parallel")
+            commands.append("pids=()")
+            for i, project in enumerate(self.config['projects']):
+                org_prefix = self.config.get('settings', {}).get('organization_prefix', 'bmc-')
+                org_replacement = self.config.get('settings', {}).get('organization_prefix_replacement', 'BMC ')
+                org_label = project['organization'].replace(org_prefix, org_replacement).title()
                 project_title = project['title']
-                commands.append(f"echo 'Checking project: {project_title} in {org_label}'")
+                repo_url = project['source'].get('repository', '') if 'source' in project and project['source'].get('type') == 'github' else ''
+                project_name = project['name']
                 
-                # Check if project already exists
-                commands.append(f"if upsunstg project:list --format plain --no-header | grep -q \"{project_title}\"; then")
-                commands.append(f"  echo '  {project_title} already exists, skipping'")
-                commands.append("else")
-                commands.append(f"  echo '  Creating {project_title}...'")
-                commands.append(f"  # Get organization ID by label")
-                commands.append(f"  org_id=$(upsunstg organization:list --format plain --no-header | grep -i \"{org_label}\" | head -1 | awk '{{print $1}}')")
-                commands.append(f"  if [ -z \"$org_id\" ]; then")
-                commands.append(f"    echo \"Error: Organization {org_label} not found\"")
-                commands.append(f"    exit 1")
-                commands.append(f"  fi")
-                
-                if project.get('source', {}).get('type') == 'github':
-                    # For GitHub projects, use the repository URL
-                    repo_url = project['source']['repository']
-                    if 'path' in project['source']:
-                        # For repositories with subdirectories, note that manual setup may be required
-                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
-                        commands.append(f"    # Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
-                    else:
-                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
-                else:
-                    # For local projects, create without init-repo
-                    commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --yes")
-                    commands.append(f"    # Note: Local project {project['name']} will need to be connected manually")
-                
-                commands.append("fi")
+                commands.append(f"# Starting project {i+1}: {project_title}")
+                commands.append(f"create_project \"{project_title}\" \"{org_label}\" \"{repo_url}\" \"{project_name}\" &")
+                commands.append(f"pids+=($!)")
+                commands.append("")
+            
+            # Wait for all background processes to complete
+            commands.append("# Wait for all project creation processes to complete")
+            commands.append("echo 'Waiting for all projects to be created...'")
+            commands.append("for pid in \"${pids[@]}\"; do")
+            commands.append("  wait $pid")
+            commands.append("done")
+            commands.append("")
+            commands.append("echo 'All project creation processes completed!'")
+            commands.append("")
         else:
             commands.append("# No projects configured")
         
@@ -445,7 +491,7 @@ class DemoEcosystemManager:
         """Save commands to a shell script file."""
         with open(filename, 'w') as f:
             f.write("#!/bin/bash\n")
-            f.write("# BMC Global Group Inc. - Upsun Demo Ecosystem Commands\n")
+            f.write(f"# {self.config.get('company', {}).get('name', 'Demo Company')} - Upsun Demo Ecosystem Commands\n")
             f.write("# Generated from demo-config.json\n\n")
             f.write("set -e  # Exit on any error\n\n")
             
@@ -457,7 +503,7 @@ class DemoEcosystemManager:
         print(f"Commands saved to {filename}")
 
 def main():
-    parser = argparse.ArgumentParser(description='BMC Global Group Inc. - Upsun Demo Ecosystem Manager')
+    parser = argparse.ArgumentParser(description='Upsun Demo Ecosystem Manager')
     parser.add_argument('--config', default='demo-config.json', help='Configuration file path')
     parser.add_argument('--action', choices=['setup', 'cleanup', 'both'], default='both', help='Action to perform')
     parser.add_argument('--output', help='Output file for generated commands')
