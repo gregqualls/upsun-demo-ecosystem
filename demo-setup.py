@@ -143,11 +143,11 @@ class DemoEcosystemManager:
         commands.append("# Phase 2: Create Organizations")
         commands.append("echo 'Creating organizations...'")
         
-        # Check if organizations already exist by label
+        # Check if organizations already exist by label only
         commands.append("# Check for existing organizations by label")
         commands.append("existing_orgs=$(upsunstg organization:list --format plain --no-header | awk '{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
         
-        # Fixed organizations
+        # Fixed organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['fixed']:
             org_label = org['label'].lower()
             commands.append(f"echo 'Checking Fixed organization: {org['label']}'")
@@ -155,19 +155,33 @@ class DemoEcosystemManager:
             commands.append(f"  echo '  {org['label']} already exists, skipping'")
             commands.append("else")
             commands.append(f"  echo '  Creating {org['label']}...'")
-            commands.append(f"  upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d '{{\"label\": \"{org['label']}\", \"type\": \"fixed\"}}'")
+            commands.append(f"  # Generate unique name with timestamp")
+            commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
+            commands.append(f"  if upsunstg organization:create --label \"{org['label']}\" --name \"$unique_name\" --yes 2>/dev/null; then")
+            commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
+            commands.append(f"    sleep 10  # Rate limiting delay after creation")
+            commands.append("  else")
+            commands.append(f"    echo '  ❌ Failed to create {org['label']} - stopping setup'")
+            commands.append(f"    exit 1")
+            commands.append("  fi")
             commands.append("fi")
         
-        # Flex organizations
+        # Flex organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['flex']:
-            org_name = org['name'].lower().replace(' ', '-')
             org_label = org['label'].lower()
             commands.append(f"echo 'Checking Flex organization: {org['label']}'")
             commands.append(f"if echo \"$existing_orgs\" | grep -q \"{org_label}\"; then")
             commands.append(f"  echo '  {org['label']} already exists, skipping'")
             commands.append("else")
             commands.append(f"  echo '  Creating {org['label']}...'")
-            commands.append(f"  upsunstg organization:create --label \"{org['label']}\" --name \"{org_name}\" --yes")
+            commands.append(f"  # Generate unique name with timestamp")
+            commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
+            commands.append(f"  if upsunstg organization:create --label \"{org['label']}\" --name \"$unique_name\" --yes 2>/dev/null; then")
+            commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
+            commands.append(f"    sleep 15  # Rate limiting delay after creation")
+            commands.append("  else")
+            commands.append(f"    echo '  ⚠ Failed to create {org['label']} - continuing with existing organizations'")
+            commands.append("  fi")
             commands.append("fi")
         
         return commands
@@ -266,13 +280,13 @@ class DemoEcosystemManager:
                     repo_url = project['source']['repository']
                     if 'path' in project['source']:
                         # For repositories with subdirectories, note that manual setup may be required
-                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                         commands.append(f"    # Note: This project uses a subdirectory ({project['source']['path']}) - manual configuration may be required")
                     else:
-                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
+                        commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --init-repo \"{repo_url}\" --yes")
                 else:
                     # For local projects, create without init-repo
-                    commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"bk3.recreation.plat.farm\" --yes")
+                    commands.append(f"    upsunstg project:create --title \"{project['title']}\" --org \"$org_id\" --region \"plc.recreation.plat.farm\" --yes")
                     commands.append(f"    # Note: Local project {project['name']} will need to be connected manually")
                 
                 commands.append("fi")

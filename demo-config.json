@@ -28,8 +28,8 @@
     ],
     "flex": [
       {
-        "name": "BMC EMEA",
-        "label": "BMC EMEA",
+        "name": "BMC Europe",
+        "label": "BMC Europe",
         "type": "flex",
         "description": "Europe, Middle East, and Africa operations"
       },
