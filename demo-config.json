@@ -5,6 +5,13 @@
     "description": "Technology Holding Company",
     "size": "Small to medium enterprise (50-100 employees)"
   },
+  "users": [
+    {
+      "email": "kemi.ojogbede@platform.sh",
+      "name": "Kemi O",
+      "role": "developer"
+    }
+  ],
   "organizations": {
     "fixed": [
       {

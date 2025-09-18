@@ -57,6 +57,9 @@ class DemoEcosystemManager:
         # Phase 5: Projects
         commands.extend(self.generate_project_commands())
         
+        # Phase 6: User Invitations
+        commands.extend(self.generate_user_invitation_commands())
+        
         # Phase 8: Environment Setup
         commands.extend(self.generate_environment_commands())
         
@@ -109,11 +112,13 @@ class DemoEcosystemManager:
         commands.append("# Phase 3: Delete users (if any)")
         if 'users' in self.config and self.config['users']:
             for user in self.config['users']:
-                if 'projects' in self.config and self.config['projects']:
-                    project_id = self.config['projects'][0]['name']
-                    commands.append(f"upsunstg user:delete \"{user['email']}\" --project \"{project_id}\" --yes")
-                else:
-                    commands.append(f"# No projects available for user deletion {user['email']}")
+                commands.append(f"echo \"Deleting user {user['email']} from all projects...\"")
+                commands.append("upsunstg project:list --pipe | while read project_id; do")
+                commands.append(f"  if [ ! -z \"$project_id\" ]; then")
+                commands.append(f"    echo \"  Removing user from project: $project_id\"")
+                commands.append(f"    upsunstg user:delete \"{user['email']}\" --project \"$project_id\" --yes 2>/dev/null || echo \"    ⚠ Failed to remove user from project $project_id\"")
+                commands.append("  fi")
+                commands.append("done")
         else:
             commands.append("# No users to delete")
         
@@ -147,24 +152,20 @@ class DemoEcosystemManager:
         commands.append("# Check for existing organizations by label")
         commands.append("existing_orgs=$(upsunstg organization:list --format plain --no-header | awk '{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
         
-        # Fixed organizations (use unique names to avoid conflicts)
+        # Fixed organizations - user needs to create manually in production
+        commands.append("# Fixed organizations need to be created manually in production")
+        commands.append("echo '⚠️  FIXED ORGANIZATIONS REQUIRED'")
+        commands.append("echo '================================'")
+        commands.append("echo 'The following Fixed organizations need to be created manually:'")
         for org in self.config['organizations']['fixed']:
-            org_label = org['label'].lower()
-            commands.append(f"echo 'Checking Fixed organization: {org['label']}'")
-            commands.append(f"if echo \"$existing_orgs\" | grep -q \"{org_label}\"; then")
-            commands.append(f"  echo '  {org['label']} already exists, skipping'")
-            commands.append("else")
-            commands.append(f"  echo '  Creating {org['label']}...'")
-            commands.append(f"  # Generate unique name with timestamp")
-            commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
-            commands.append(f"  if upsunstg organization:create --label \"{org['label']}\" --name \"$unique_name\" --yes 2>/dev/null; then")
-            commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
-            commands.append(f"    sleep 10  # Rate limiting delay after creation")
-            commands.append("  else")
-            commands.append(f"    echo '  ❌ Failed to create {org['label']} - stopping setup'")
-            commands.append(f"    exit 1")
-            commands.append("  fi")
-            commands.append("fi")
+            commands.append(f"echo '  - {org['label']}'")
+        commands.append("echo ''")
+        commands.append("echo 'Please create these organizations in the production console'")
+        commands.append("echo 'and note their organization IDs for the script to continue.'")
+        commands.append("echo ''")
+        commands.append("echo 'Once created, run this script again to continue with projects.'")
+        commands.append("echo ''")
+        commands.append("exit 0")
         
         # Flex organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['flex']:
@@ -248,6 +249,44 @@ class DemoEcosystemManager:
                     commands.append(f"# No projects available for user {user['email']}")
         else:
             commands.append("# No users configured - current logged-in user will have access")
+        return commands
+    
+    def generate_user_invitation_commands(self) -> List[str]:
+        """Generate user invitation commands."""
+        commands = []
+        commands.append("# Phase 4: Invite Users")
+        commands.append("echo 'Inviting users to organizations and projects...'")
+        
+        if 'users' in self.config and self.config['users']:
+            for user in self.config['users']:
+                commands.append(f"echo 'Inviting {user['name']} ({user['email']})...'")
+                
+                # Get all organization IDs
+                commands.append("# Get all organization IDs")
+                commands.append("org_ids=$(upsunstg organization:list --format plain --no-header | awk '{print $1}')")
+                
+                # Invite to all organizations
+                commands.append("# Invite to all organizations")
+                commands.append("for org_id in $org_ids; do")
+                commands.append(f"  echo '  Inviting to organization: $org_id'")
+                commands.append(f"  upsunstg organization:user:add --org \"$org_id\" --email \"{user['email']}\" --role developer --yes 2>/dev/null || echo '    ⚠ Failed to invite to org $org_id'")
+                commands.append("done")
+                
+                # Get all project IDs
+                commands.append("# Get all project IDs")
+                commands.append("project_ids=$(upsunstg project:list --pipe)")
+                
+                # Invite to all projects
+                commands.append("# Invite to all projects")
+                commands.append("for project_id in $project_ids; do")
+                commands.append(f"  echo '  Inviting to project: $project_id'")
+                commands.append(f"  upsunstg project:user:add --project \"$project_id\" --email \"{user['email']}\" --role developer --yes 2>/dev/null || echo '    ⚠ Failed to invite to project $project_id'")
+                commands.append("done")
+                
+                commands.append(f"echo '✓ User {user['name']} invitation process completed'")
+        else:
+            commands.append("# No users configured for invitation")
+        
         return commands
     
     def generate_project_commands(self) -> List[str]:
