@@ -51,8 +51,7 @@ class DemoEcosystemManager:
         # Phase 3: Organization Verification
         commands.extend(self.generate_organization_verification_commands())
         
-        # Phase 4: Users
-        commands.extend(self.generate_user_commands())
+        # Phase 4: Users (handled in user invitation phase)
         
         # Phase 5: Projects
         commands.extend(self.generate_project_commands())
@@ -152,20 +151,24 @@ class DemoEcosystemManager:
         commands.append("# Check for existing organizations by label")
         commands.append("existing_orgs=$(upsunstg organization:list --format plain --no-header | awk '{for(i=2;i<=NF;i++) printf \"%s \", $i; print \"\"}' | tr '[:upper:]' '[:lower:]' | sed 's/ $//')")
         
-        # Fixed organizations - user needs to create manually in production
-        commands.append("# Fixed organizations need to be created manually in production")
-        commands.append("echo '⚠️  FIXED ORGANIZATIONS REQUIRED'")
-        commands.append("echo '================================'")
-        commands.append("echo 'The following Fixed organizations need to be created manually:'")
+        # Fixed organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['fixed']:
-            commands.append(f"echo '  - {org['label']}'")
-        commands.append("echo ''")
-        commands.append("echo 'Please create these organizations in the production console'")
-        commands.append("echo 'and note their organization IDs for the script to continue.'")
-        commands.append("echo ''")
-        commands.append("echo 'Once created, run this script again to continue with projects.'")
-        commands.append("echo ''")
-        commands.append("exit 0")
+            org_label = org['label'].lower()
+            commands.append(f"echo 'Checking Fixed organization: {org['label']}'")
+            commands.append(f"if echo \"$existing_orgs\" | grep -q \"{org_label}\"; then")
+            commands.append(f"  echo '  {org['label']} already exists, skipping'")
+            commands.append("else")
+            commands.append(f"  echo '  Creating {org['label']}...'")
+            commands.append(f"  # Generate unique name with timestamp")
+            commands.append(f"  unique_name=\"{org['name'].lower().replace(' ', '-')}-$(date +%s)\"")
+            commands.append(f"  if upsunstg a:curl -X POST organizations -H \"Content-Type: application/json\" -d \"{{\\\"label\\\": \\\"{org['label']}\\\", \\\"name\\\": \\\"$unique_name\\\", \\\"type\\\": \\\"fixed\\\"}}\" 2>/dev/null; then")
+            commands.append(f"    echo \"  ✓ {org['label']} created successfully with name: $unique_name\"")
+            commands.append(f"    sleep 10  # Rate limiting delay after creation")
+            commands.append("  else")
+            commands.append(f"    echo '  ❌ Failed to create {org['label']} - stopping setup'")
+            commands.append(f"    exit 1")
+            commands.append("  fi")
+            commands.append("fi")
         
         # Flex organizations (use unique names to avoid conflicts)
         for org in self.config['organizations']['flex']:
